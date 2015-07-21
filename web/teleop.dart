@@ -39,7 +39,7 @@ class UpDroidTeleop extends TabController {
     view.content.contentEdge.height = new Dimension.percent(100);
 
     // TODO: compress this svg (use that OS X tool).
-    ImageElement image = new ImageElement(src: 'lib/tabs/teleop/xbox.svg')
+    ImageElement image = new ImageElement(src: 'http://localhost:12060/upcom-teleop/xbox.svg')
       ..style.position = 'absolute'
       ..style.top = '50%'
       ..style.left = '50%'
