@@ -30,14 +30,11 @@ class CmdrTeleop extends Tab {
   }
 
   void _handleGamepadInput(String endpoint, String s) {
+    print(s);
     _shell.stdin.add(UTF8.encode(s));
   }
 
   void cleanup() {
     _shell.kill();
   }
-}
-
-void main(List args, SendPort interfacesSendPort) {
-  Tab.main(interfacesSendPort, args, (id, path, port, args) => new CmdrTeleop(id, path, port, args));
 }
