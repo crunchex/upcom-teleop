@@ -30,7 +30,6 @@ class CmdrTeleop extends Tab {
   }
 
   void _handleGamepadInput(String endpoint, String s) {
-    print(s);
     _shell.stdin.add(UTF8.encode(s));
   }
 
