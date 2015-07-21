@@ -29,7 +29,7 @@ class CmdrTeleop extends Tab {
     mailbox.registerEndPointHandler('/$guiName/$id/controller/0', _handleGamepadInput);
   }
 
-  void _handleGamepadInput(String s) {
+  void _handleGamepadInput(String endpoint, String s) {
     _shell.stdin.add(UTF8.encode(s));
   }
 
