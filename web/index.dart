@@ -8,6 +8,6 @@ void main() {
   document.body.children.add(teleopJs);
 
   teleopJs.onLoad.first.then((_) {
-    new UpDroidTeleop(1, 1);
+    new UpDroidTeleop();
   });
 }

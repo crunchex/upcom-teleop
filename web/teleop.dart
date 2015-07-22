@@ -22,8 +22,7 @@ class UpDroidTeleop extends TabController {
 
   WebSocket _ws;
 
-  UpDroidTeleop(int id, int col) :
-  super(id, col, className, 'Teleop', getMenuConfig()) {
+  UpDroidTeleop() : super(className, 'Teleop', getMenuConfig()) {
 
   }
 
