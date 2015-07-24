@@ -20,8 +20,6 @@ class CmdrTeleop extends Tab {
       stdout.addStream(process.stdout);
       stderr.addStream(process.stderr);
     });
-
-    mailbox.send(new Msg('TAB_READY'));
   }
 
   void registerMailbox() {
