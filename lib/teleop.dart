@@ -11,7 +11,7 @@ class CmdrTeleop extends Tab {
   Process _shell;
 
   CmdrTeleop(int id, String workspacePath, SendPort sp, List args) :
-  super(id, 'UpDroidTeleop', sp) {
+  super(id, 'upcom-teleop', 'UpDroid Teleop', 'Teleop', sp) {
     Workspace workspace = new Workspace(workspacePath);
 //    Ros.runNode(workspace, 'ros_arduino_python joy_cmdr.launch');
 
@@ -23,7 +23,7 @@ class CmdrTeleop extends Tab {
   }
 
   void registerMailbox() {
-    mailbox.registerEndPointHandler('/$guiName/$id/controller/0', _handleGamepadInput);
+    mailbox.registerEndPointHandler('/$refName/$id/controller/0', _handleGamepadInput);
   }
 
   void _handleGamepadInput(String endpoint, String s) {

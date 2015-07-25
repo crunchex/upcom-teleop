@@ -7,8 +7,6 @@ import 'dart:js' as js;
 import 'package:upcom-api/web/tab/tab_controller.dart';
 
 class UpDroidTeleop extends TabController {
-  static String className = 'UpDroidTeleop';
-
   static List getMenuConfig() {
     List menu = [
       {'title': 'File', 'items': [
@@ -22,7 +20,7 @@ class UpDroidTeleop extends TabController {
 
   WebSocket _ws;
 
-  UpDroidTeleop() : super(className, 'Teleop', getMenuConfig()) {
+  UpDroidTeleop() : super('upcom-teleop', 'UpDroid Teleop', 'Teleop', getMenuConfig()) {
 
   }
 
@@ -38,7 +36,7 @@ class UpDroidTeleop extends TabController {
     view.content.contentEdge.height = new Dimension.percent(100);
 
     // TODO: compress this svg (use that OS X tool).
-    ImageElement image = new ImageElement(src: 'http://localhost:12060/tabs/upcom-teleop/xbox.svg')
+    ImageElement image = new ImageElement(src: 'http://localhost:12060/tabs/$refName/xbox.svg')
       ..style.position = 'absolute'
       ..style.top = '50%'
       ..style.left = '50%'
@@ -54,7 +52,7 @@ class UpDroidTeleop extends TabController {
       containerDiv.children.add(span);
 
       ParagraphElement axisLabel = new ParagraphElement()
-        ..id = '${className.toLowerCase()}-$id-axis-label-$i'
+        ..id = '$refName-$id-axis-label-$i'
         ..style.display = 'inline'
         ..style.color = '#ffffff'
         ..style.fontSize = '16px'
@@ -62,7 +60,7 @@ class UpDroidTeleop extends TabController {
       span.children.add(axisLabel);
 
       ParagraphElement axisData = new ParagraphElement()
-        ..id = '${className.toLowerCase()}-$id-axis-data-$i'
+        ..id = '$refName-$id-axis-data-$i'
         ..style.display = 'inline'
         ..style.color = '#ffffff'
         ..style.fontSize = '16px'
@@ -79,7 +77,7 @@ class UpDroidTeleop extends TabController {
       containerDiv.children.add(span);
 
       ParagraphElement buttonLabel = new ParagraphElement()
-        ..id = '${className.toLowerCase()}-$id-button-label-$i'
+        ..id = '$refName-$id-button-label-$i'
         ..style.display = 'inline'
         ..style.color = '#ffffff'
         ..style.fontSize = '16px'
@@ -87,7 +85,7 @@ class UpDroidTeleop extends TabController {
       span.children.add(buttonLabel);
 
       ParagraphElement buttonData = new ParagraphElement()
-        ..id = '${className.toLowerCase()}-$id-button-data-$i'
+        ..id = '$refName-$id-button-data-$i'
         ..style.display = 'inline'
         ..style.color = '#ffffff'
         ..style.fontSize = '16px'
@@ -101,7 +99,7 @@ class UpDroidTeleop extends TabController {
     url = url.split(':')[0];
     // window.location.host returns whatever is in the URL bar (including port).
     // Since the port here needs to be dynamic, the default needs to be replaced.
-    _initWebSocket('ws://' + url + ':12060/${className}/$id/controller/0');
+    _initWebSocket('ws://' + url + ':12060/$refName/$id/controller/0');
 
     //_setGamepads();
   }
@@ -148,7 +146,7 @@ class UpDroidTeleop extends TabController {
     Map deviceIds = js.context['controllers'];
     //deviceIds.sort((a, b) => a.compareTo(b));
     for (int i = 0; i < deviceIds.keys.length; i++) {
-      view.addMenuItem({'type': 'toggle', 'title': 'Gamepad$i'}, '#${shortName.toLowerCase()}-$id-controllers');
+      view.addMenuItem({'type': 'toggle', 'title': 'Gamepad$i'}, '#$refName-$id-controllers');
     }
   }
 
