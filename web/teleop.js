@@ -73,11 +73,11 @@ function scangamepads() {
 
 function startScanning(idNum) {
     for (var i = 0; i < 4; i++) {
-        axes[i] = document.getElementById('updroidteleop-' + idNum + '-axis-data-' + i);
+        axes[i] = document.getElementById('upcom-teleop-' + idNum + '-axis-data-' + i);
     }
 
     for (var j = 0; j < 17; j++) {
-        buttons[j] = document.getElementById('updroidteleop-' + idNum + '-button-data-' + j);
+        buttons[j] = document.getElementById('upcom-teleop-' + idNum + '-button-data-' + j);
     }
 
     if (haveEvents) {
