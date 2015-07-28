@@ -7,6 +7,8 @@ import 'dart:js' as js;
 import 'package:upcom-api/web/tab/tab_controller.dart';
 
 class UpDroidTeleop extends TabController {
+  static final List<String> names = ['upcom-teleop', 'UpDroid Teleop', 'Teleop'];
+
   static List getMenuConfig() {
     List menu = [
       {'title': 'File', 'items': [
@@ -20,7 +22,8 @@ class UpDroidTeleop extends TabController {
 
   WebSocket _ws;
 
-  UpDroidTeleop() : super('upcom-teleop', 'UpDroid Teleop', 'Teleop', getMenuConfig()) {
+  UpDroidTeleop() :
+  super(UpDroidTeleop.names, getMenuConfig()) {
 
   }
 
