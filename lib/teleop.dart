@@ -8,11 +8,12 @@ import 'package:upcom-api/tab_backend.dart';
 import 'package:upcom-api/ros.dart';
 
 class CmdrTeleop extends Tab {
+  static final List<String> names = ['upcom-teleop', 'UpDroid Teleop', 'Teleop'];
   Process _shell;
 
-  CmdrTeleop(int id, String workspacePath, SendPort sp, List args) :
-  super(id, 'upcom-teleop', 'UpDroid Teleop', 'Teleop', sp) {
-    Workspace workspace = new Workspace(workspacePath);
+  CmdrTeleop(SendPort sp, List args) :
+  super(CmdrTeleop.names, sp, args) {
+    Workspace workspace = new Workspace(args[2]);
 //    Ros.runNode(workspace, 'ros_arduino_python joy_cmdr.launch');
 
     Process.start('bash', ['-c', '. ${workspace.path}/catkin_ws/devel/setup.bash && roslaunch ros_arduino_python joy_cmdr.launch'], runInShell: true).then((process) {
