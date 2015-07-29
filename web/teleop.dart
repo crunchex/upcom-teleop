@@ -33,6 +33,7 @@ class UpDroidTeleop extends TabController {
     ..style.width = '100%'
     ..style.height = '100%'
     ..style.backgroundColor = '#107C10'
+    ..style.outline = 'none'
     ..tabIndex = -1;
     view.content.children.add(containerDiv);
 
