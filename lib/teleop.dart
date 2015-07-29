@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:upcom-api/tab_backend.dart';
-import 'package:upcom-api/ros.dart';
 
 class CmdrTeleop extends Tab {
   static final List<String> names = ['upcom-teleop', 'UpDroid Teleop', 'Teleop'];
@@ -13,10 +12,10 @@ class CmdrTeleop extends Tab {
 
   CmdrTeleop(SendPort sp, List args) :
   super(CmdrTeleop.names, sp, args) {
-    Workspace workspace = new Workspace(args[2]);
+    Directory uproot = new Directory(args[2]);
 //    Ros.runNode(workspace, 'ros_arduino_python joy_cmdr.launch');
 
-    Process.start('bash', ['-c', '. ${workspace.path}/catkin_ws/devel/setup.bash && roslaunch ros_arduino_python joy_cmdr.launch'], runInShell: true).then((process) {
+    Process.start('bash', ['-c', '. ${uproot.path}/catkin_ws/devel/setup.bash && roslaunch ros_arduino_python joy_cmdr.launch'], runInShell: true).then((process) {
       _shell = process;
       stdout.addStream(process.stdout);
       stderr.addStream(process.stderr);
@@ -28,10 +27,10 @@ class CmdrTeleop extends Tab {
   }
 
   void _handleGamepadInput(String endpoint, String s) {
-    _shell.stdin.add(UTF8.encode(s));
+    if (_shell != null) _shell.stdin.add(UTF8.encode(s));
   }
 
   void cleanup() {
-    _shell.kill();
+    if (_shell != null) _shell.kill();
   }
 }
