@@ -15,7 +15,7 @@ class CmdrTeleop extends Tab {
     Directory uproot = new Directory(args[2]);
 //    Ros.runNode(workspace, 'ros_arduino_python joy_cmdr.launch');
 
-    Process.start('bash', ['-c', '. ${uproot.path}/catkin_ws/devel/setup.bash && roslaunch teleop_up1 joy_cmdr.launch'], runInShell: true).then((process) {
+    Process.start('bash', ['-c', '. ${uproot.path}/catkin_ws/devel/setup.bash && roslaunch teleop_up1 cmdr_joy.launch'], runInShell: true).then((process) {
       _shell = process;
       stdout.addStream(process.stdout);
       stderr.addStream(process.stderr);
