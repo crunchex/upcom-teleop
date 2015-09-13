@@ -6,6 +6,10 @@
     overflow-x: hidden;
 }
 
+.upcom-teleop-stream {
+    height: 100%;
+}
+
 .upcom-teleop-icon {
     position: absolute;
     top: 50%;
