@@ -23,7 +23,7 @@ class UpDroidTeleop extends TabController {
   WebSocket _ws;
 
   UpDroidTeleop() :
-  super(UpDroidTeleop.names, getMenuConfig()) {
+  super(UpDroidTeleop.names, getMenuConfig(), 'tabs/upcom-teleop/teleop.css') {
 
   }
 
@@ -41,58 +41,46 @@ class UpDroidTeleop extends TabController {
 
     // TODO: compress this svg (use that OS X tool).
     ImageElement image = new ImageElement(src:'tabs/$refName/xbox.svg')
-      ..style.position = 'absolute'
-      ..style.top = '50%'
-      ..style.left = '50%'
-      ..style.transform = 'translate(-50%, -200px)';
+      ..id = '$refName-$id-icon'
+      ..classes.add('$refName-icon');
     containerDiv.children.add(image);
 
     for (int i = 0; i < 4; i++) {
       SpanElement span = new SpanElement()
-        ..style.position = 'absolute'
-        ..style.top = '50%'
-        ..style.left = '50%'
+        ..id = '$refName-$id-axis-span-$i'
+        ..classes.add('$refName-axis-span')
         ..style.transform = 'translate(-50%, -${i * 20 + 50}px)';
       containerDiv.children.add(span);
 
       ParagraphElement axisLabel = new ParagraphElement()
         ..id = '$refName-$id-axis-label-$i'
-        ..style.display = 'inline'
-        ..style.color = '#ffffff'
-        ..style.fontSize = '16px'
+        ..classes.add('$refName-axis-label')
         ..text = 'Axis $i: ';
       span.children.add(axisLabel);
 
       ParagraphElement axisData = new ParagraphElement()
         ..id = '$refName-$id-axis-data-$i'
-        ..style.display = 'inline'
-        ..style.color = '#ffffff'
-        ..style.fontSize = '16px'
+        ..classes.add('$refName-axis-data')
         ..text = 'disconnected';
       span.children.add(axisData);
     }
 
     for (int i = 0; i < 17; i++) {
       SpanElement span = new SpanElement()
-        ..style.position = 'absolute'
-        ..style.top = '50%'
-        ..style.left = '50%'
+        ..id = '$refName-$id-button-span-$i'
+        ..classes.add('$refName-button-span')
         ..style.transform = 'translate(-50%, ${i * 20 - 30}px)';
       containerDiv.children.add(span);
 
       ParagraphElement buttonLabel = new ParagraphElement()
         ..id = '$refName-$id-button-label-$i'
-        ..style.display = 'inline'
-        ..style.color = '#ffffff'
-        ..style.fontSize = '16px'
+        ..classes.add('$refName-button-label')
         ..text = 'Button $i: ';
       span.children.add(buttonLabel);
 
       ParagraphElement buttonData = new ParagraphElement()
         ..id = '$refName-$id-button-data-$i'
-        ..style.display = 'inline'
-        ..style.color = '#ffffff'
-        ..style.fontSize = '16px'
+        ..classes.add('$refName-button-data')
         ..text = '0';
       span.children.add(buttonData);
     }
