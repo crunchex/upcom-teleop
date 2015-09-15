@@ -21,6 +21,7 @@ class UpDroidTeleop extends TabController {
   DivElement containerDiv;
 
   WebSocket _ws;
+  ImageElement _stream;
 
   UpDroidTeleop() :
   super(UpDroidTeleop.names, getMenuConfig(), 'tabs/upcom-teleop/teleop.css') {
@@ -39,10 +40,12 @@ class UpDroidTeleop extends TabController {
 
     view.content.contentEdge.height = new Dimension.percent(100);
 
-    ImageElement stream = new ImageElement(src: 'http://localhost:8080/stream?topic=/stereo/left/image_rect_color')
+    ImageElement _stream = new ImageElement(src: 'http://localhost:8080/stream?topic=/stereo/left/image_rect_color')
       ..id = '$refName-$id-stream'
       ..classes.add('$refName-stream');
-    containerDiv.children.add(stream);
+    containerDiv.children.add(_stream);
+
+    _setStreamDimensions();
 
 
     // TODO: compress this svg (use that OS X tool).
@@ -148,14 +151,28 @@ class UpDroidTeleop extends TabController {
     }
   }
 
-  //\/\/ Mailbox Handlers /\/\//
-
   void registerMailbox() {
 
   }
 
   void registerEventHandlers() {
+    window.onResize.listen((e) {
+      _setStreamDimensions();
+    });
+  }
 
+  void _setStreamDimensions() {
+    if (_stream == null) return;
+
+    print('updating stream dimensions...');
+
+    if (_stream.contentEdge.width > _stream.contentEdge.height) {
+      _stream.style.width = '100%';
+      _stream.style.height = '';
+    } else {
+      _stream.style.height = '100%';
+      _stream.style.width = '';
+    }
   }
 
   Element get elementToFocus => containerDiv;
