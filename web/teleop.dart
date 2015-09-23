@@ -94,15 +94,15 @@ class UpDroidTeleop extends TabController {
 //      span.children.add(buttonData);
 //    }
 
-    new js.JsObject(js.context['startScanning'], [id]);
-
-    String url = window.location.host;
-    url = url.split(':')[0];
-    // window.location.host returns whatever is in the URL bar (including port).
-    // Since the port here needs to be dynamic, the default needs to be replaced.
-    _initWebSocket('ws://' + url + ':12060/$refName/$id/controller/0');
-
-    //_setGamepads();
+//    new js.JsObject(js.context['startScanning'], [id]);
+//
+//    String url = window.location.host;
+//    url = url.split(':')[0];
+//    // window.location.host returns whatever is in the URL bar (including port).
+//    // Since the port here needs to be dynamic, the default needs to be replaced.
+//    _initWebSocket('ws://' + url + ':12060/$refName/$id/controller/0');
+//
+//    _setGamepads();
   }
 
   void _initWebSocket(String url, [int retrySeconds = 2]) {
