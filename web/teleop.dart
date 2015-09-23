@@ -21,7 +21,8 @@ class UpDroidTeleop extends TabController {
   DivElement containerDiv;
 
   WebSocket _ws;
-  ImageElement _stream;
+  ImageElement _streamLeft, _streamRight;
+  Timer _resizeTimer;
 
   UpDroidTeleop() :
   super(UpDroidTeleop.names, getMenuConfig(), 'tabs/upcom-teleop/teleop.css') {
@@ -33,7 +34,7 @@ class UpDroidTeleop extends TabController {
     containerDiv = new DivElement()
     ..style.width = '100%'
     ..style.height = '100%'
-    ..style.backgroundColor = '#107C10'
+    ..style.backgroundColor = '#000000'
     ..style.outline = 'none'
     ..tabIndex = -1;
     view.content.children.add(containerDiv);
@@ -45,10 +46,15 @@ class UpDroidTeleop extends TabController {
   }
 
   void _setUpVideoFeeds() {
-    ImageElement _stream = new ImageElement(src: 'http://localhost:8080/stream?topic=/stereo/left/image_rect_color')
+    _streamLeft = new ImageElement(src: 'http://localhost:12062/stream?topic=/stereo/left/image_raw')
       ..id = '$refName-$id-stream'
       ..classes.add('$refName-stream');
-    containerDiv.children.add(_stream);
+    containerDiv.children.add(_streamLeft);
+
+    _streamRight = new ImageElement(src: 'http://localhost:12062/stream?topic=/stereo/right/image_raw')
+      ..id = '$refName-$id-stream'
+      ..classes.addAll(['$refName-stream', 'small']);
+    containerDiv.children.add(_streamRight);
 
     _setStreamDimensions();
   }
@@ -163,21 +169,28 @@ class UpDroidTeleop extends TabController {
 
   void registerEventHandlers() {
     window.onResize.listen((e) {
-      _setStreamDimensions();
+      if (_resizeTimer != null) _resizeTimer.cancel();
+      _resizeTimer = new Timer(new Duration(milliseconds: 500), () {
+        _setStreamDimensions();
+      });
     });
   }
 
   void _setStreamDimensions() {
-    if (_stream == null) return;
+    if (containerDiv.contentEdge.width < containerDiv.contentEdge.height) {
+      _streamLeft.style.width = '100%';
+      String newHeight = '${(containerDiv.contentEdge.width * 240 / 320).toString()}px';
+      _streamLeft.style.height = newHeight;
 
-    print('updating stream dimensions...');
-
-    if (_stream.contentEdge.width > _stream.contentEdge.height) {
-      _stream.style.width = '100%';
-      _stream.style.height = '';
+      double margin = (containerDiv.contentEdge.height - _streamLeft.contentEdge.height) / 2;
+      _streamLeft.style.margin = '${margin.toString()}px 0 ${margin.toString()}px 0';
     } else {
-      _stream.style.height = '100%';
-      _stream.style.width = '';
+      _streamLeft.style.height = '100%';
+      String newWidth = '${(containerDiv.contentEdge.height * 320 / 240).toString()}px';
+      _streamLeft.style.width = newWidth;
+
+      double margin = (containerDiv.contentEdge.width - _streamLeft.contentEdge.width) / 2;
+      _streamLeft.style.margin = '0 ${margin.toString()}px 0 ${margin.toString()}px';
     }
   }
 
