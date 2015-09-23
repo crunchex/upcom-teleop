@@ -18,11 +18,12 @@ class UpDroidTeleop extends TabController {
     return menu;
   }
 
-  DivElement containerDiv;
+  DivElement containerDiv, _toolbar;
 
   WebSocket _ws;
   ImageElement _streamLeft, _streamRight;
   Timer _resizeTimer;
+  SpanElement _gamepadButton, _keyboardButton;
 
   UpDroidTeleop() :
   super(UpDroidTeleop.names, getMenuConfig(), 'tabs/upcom-teleop/teleop.css') {
@@ -36,7 +37,19 @@ class UpDroidTeleop extends TabController {
       ..classes.add('$refName-container');
     view.content.children.add(containerDiv);
 
-    view.content.contentEdge.height = new Dimension.percent(100);
+    // Set up the toolbar.
+    _toolbar = new DivElement()
+      ..classes.add('toolbar');
+    view.content.children.add(_toolbar);
+
+    _gamepadButton = new SpanElement()
+      ..title = 'Gamepad Control'
+      ..classes.addAll(['glyphicons', 'glyphicons-gamepad']);
+    _keyboardButton = new SpanElement()
+      ..title = 'Keyboard Control'
+      ..classes.addAll(['glyphicons', 'glyphicons-keyboard-wireless']);
+
+    _toolbar.children.addAll([_keyboardButton, _gamepadButton]);
 
     _setUpVideoFeeds();
 //    _setUpControl();
@@ -55,7 +68,10 @@ class UpDroidTeleop extends TabController {
       ..classes.addAll(['$refName-stream', 'small']);
     containerDiv.children.add(_streamRight);
 
-    _setStreamDimensions();
+    // Timer to let the streams settle.
+    new Timer(new Duration(milliseconds: 500), () {
+      _setStreamDimensions();
+    });
   }
 
   void _setUpControl() {
@@ -177,6 +193,7 @@ class UpDroidTeleop extends TabController {
 
   void _setStreamDimensions() {
     if (containerDiv.contentEdge.width < containerDiv.contentEdge.height) {
+      // Usually normal mode.
       _streamLeft.style.width = '100%';
       String newHeight = '${(containerDiv.contentEdge.width * 240 / 320).toString()}px';
       _streamLeft.style.height = newHeight;
@@ -184,7 +201,8 @@ class UpDroidTeleop extends TabController {
       double margin = (containerDiv.contentEdge.height - _streamLeft.contentEdge.height) / 2;
       _streamLeft.style.margin = '${margin.toString()}px 0 ${margin.toString()}px 0';
     } else {
-      _streamLeft.style.height = '100%';
+      // Usually maximized mode.
+      _streamLeft.style.height = 'calc(100% - 32px)';
       String newWidth = '${(containerDiv.contentEdge.height * 320 / 240).toString()}px';
       _streamLeft.style.width = newWidth;
 
