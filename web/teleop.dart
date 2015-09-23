@@ -46,12 +46,14 @@ class UpDroidTeleop extends TabController {
   }
 
   void _setUpVideoFeeds() {
-    _streamLeft = new ImageElement(src: 'http://localhost:12062/stream?topic=/stereo/left/image_raw')
+    String ip = window.location.host.split(':')[0];
+
+    _streamLeft = new ImageElement(src: 'http://$ip:12062/stream?topic=/stereo/left/image_raw')
       ..id = '$refName-$id-stream'
       ..classes.add('$refName-stream');
     containerDiv.children.add(_streamLeft);
 
-    _streamRight = new ImageElement(src: 'http://localhost:12062/stream?topic=/stereo/right/image_raw')
+    _streamRight = new ImageElement(src: 'http://$ip:12062/stream?topic=/stereo/right/image_raw')
       ..id = '$refName-$id-stream'
       ..classes.addAll(['$refName-stream', 'small']);
     containerDiv.children.add(_streamRight);
