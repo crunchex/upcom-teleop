@@ -40,69 +40,75 @@ class UpDroidTeleop extends TabController {
 
     view.content.contentEdge.height = new Dimension.percent(100);
 
+    _setUpVideoFeeds();
+//    _setUpControl();
+  }
+
+  void _setUpVideoFeeds() {
     ImageElement _stream = new ImageElement(src: 'http://localhost:8080/stream?topic=/stereo/left/image_rect_color')
       ..id = '$refName-$id-stream'
       ..classes.add('$refName-stream');
     containerDiv.children.add(_stream);
 
     _setStreamDimensions();
+  }
 
-
+  void _setUpControl() {
     // TODO: compress this svg (use that OS X tool).
-//    ImageElement image = new ImageElement(src:'tabs/$refName/xbox.svg')
-//      ..id = '$refName-$id-icon'
-//      ..classes.add('$refName-icon');
-//    containerDiv.children.add(image);
-//
-//    for (int i = 0; i < 4; i++) {
-//      SpanElement span = new SpanElement()
-//        ..id = '$refName-$id-axis-span-$i'
-//        ..classes.add('$refName-axis-span')
-//        ..style.transform = 'translate(-50%, -${i * 20 + 50}px)';
-//      containerDiv.children.add(span);
-//
-//      ParagraphElement axisLabel = new ParagraphElement()
-//        ..id = '$refName-$id-axis-label-$i'
-//        ..classes.add('$refName-axis-label')
-//        ..text = 'Axis $i: ';
-//      span.children.add(axisLabel);
-//
-//      ParagraphElement axisData = new ParagraphElement()
-//        ..id = '$refName-$id-axis-data-$i'
-//        ..classes.add('$refName-axis-data')
-//        ..text = 'disconnected';
-//      span.children.add(axisData);
-//    }
-//
-//    for (int i = 0; i < 17; i++) {
-//      SpanElement span = new SpanElement()
-//        ..id = '$refName-$id-button-span-$i'
-//        ..classes.add('$refName-button-span')
-//        ..style.transform = 'translate(-50%, ${i * 20 - 30}px)';
-//      containerDiv.children.add(span);
-//
-//      ParagraphElement buttonLabel = new ParagraphElement()
-//        ..id = '$refName-$id-button-label-$i'
-//        ..classes.add('$refName-button-label')
-//        ..text = 'Button $i: ';
-//      span.children.add(buttonLabel);
-//
-//      ParagraphElement buttonData = new ParagraphElement()
-//        ..id = '$refName-$id-button-data-$i'
-//        ..classes.add('$refName-button-data')
-//        ..text = '0';
-//      span.children.add(buttonData);
-//    }
+    ImageElement image = new ImageElement(src:'tabs/$refName/xbox.svg')
+      ..id = '$refName-$id-icon'
+      ..classes.add('$refName-icon');
+    containerDiv.children.add(image);
 
-//    new js.JsObject(js.context['startScanning'], [id]);
-//
-//    String url = window.location.host;
-//    url = url.split(':')[0];
-//    // window.location.host returns whatever is in the URL bar (including port).
-//    // Since the port here needs to be dynamic, the default needs to be replaced.
-//    _initWebSocket('ws://' + url + ':12060/$refName/$id/controller/0');
-//
-//    _setGamepads();
+    for (int i = 0; i < 4; i++) {
+      SpanElement span = new SpanElement()
+        ..id = '$refName-$id-axis-span-$i'
+        ..classes.add('$refName-axis-span')
+        ..style.transform = 'translate(-50%, -${i * 20 + 50}px)';
+      containerDiv.children.add(span);
+
+      ParagraphElement axisLabel = new ParagraphElement()
+        ..id = '$refName-$id-axis-label-$i'
+        ..classes.add('$refName-axis-label')
+        ..text = 'Axis $i: ';
+      span.children.add(axisLabel);
+
+      ParagraphElement axisData = new ParagraphElement()
+        ..id = '$refName-$id-axis-data-$i'
+        ..classes.add('$refName-axis-data')
+        ..text = 'disconnected';
+      span.children.add(axisData);
+    }
+
+    for (int i = 0; i < 17; i++) {
+      SpanElement span = new SpanElement()
+        ..id = '$refName-$id-button-span-$i'
+        ..classes.add('$refName-button-span')
+        ..style.transform = 'translate(-50%, ${i * 20 - 30}px)';
+      containerDiv.children.add(span);
+
+      ParagraphElement buttonLabel = new ParagraphElement()
+        ..id = '$refName-$id-button-label-$i'
+        ..classes.add('$refName-button-label')
+        ..text = 'Button $i: ';
+      span.children.add(buttonLabel);
+
+      ParagraphElement buttonData = new ParagraphElement()
+        ..id = '$refName-$id-button-data-$i'
+        ..classes.add('$refName-button-data')
+        ..text = '0';
+      span.children.add(buttonData);
+    }
+
+    new js.JsObject(js.context['startScanning'], [id]);
+
+    String url = window.location.host;
+    url = url.split(':')[0];
+    // window.location.host returns whatever is in the URL bar (including port).
+    // Since the port here needs to be dynamic, the default needs to be replaced.
+    _initWebSocket('ws://' + url + ':12060/$refName/$id/controller/0');
+
+    _setGamepads();
   }
 
   void _initWebSocket(String url, [int retrySeconds = 2]) {
