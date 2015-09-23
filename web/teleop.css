@@ -6,6 +6,14 @@
     overflow-x: hidden;
 }
 
+.upcom-teleop-container {
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    outline: none;
+    tab-index: -1;
+}
+
 .upcom-teleop-stream {
     position: absolute;
     width: 320px;

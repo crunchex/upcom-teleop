@@ -32,11 +32,8 @@ class UpDroidTeleop extends TabController {
   void setUpController() {
     // Dummy div so that teleop fits with the onFocus API from tab controller.
     containerDiv = new DivElement()
-    ..style.width = '100%'
-    ..style.height = '100%'
-    ..style.backgroundColor = '#000000'
-    ..style.outline = 'none'
-    ..tabIndex = -1;
+      ..id = '$refName-$id-container'
+      ..classes.add('$refName-container');
     view.content.children.add(containerDiv);
 
     view.content.contentEdge.height = new Dimension.percent(100);
