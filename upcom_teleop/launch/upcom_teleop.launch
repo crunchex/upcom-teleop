@@ -1,0 +1,9 @@
+<launch>
+  <arg name="video_only" default="false" />
+
+  <include file="$(find upcom_teleop)/launch/joy_cmdr.launch" unless="$(arg video_only)" />
+
+  <include file="$(find up1_teleop)/launch/teleop_demo.launch" unless="$(arg video_only)" />
+  <include file="$(find up1_perception)/launch/usb_cam.launch" />
+  <include file="$(find up1_perception)/launch/web_video_server.launch" />
+</launch>

@@ -4,7 +4,7 @@ import 'dart:html';
 import 'dart:async';
 import 'dart:js' as js;
 
-import 'package:upcom-api/web/tab/tab_controller.dart';
+import 'package:upcom-api/tab_frontend.dart';
 
 class UpDroidTeleop extends TabController {
   static final List<String> names = ['upcom-teleop', 'UpDroid Teleop', 'Teleop'];
@@ -50,9 +50,6 @@ class UpDroidTeleop extends TabController {
       ..classes.addAll(['glyphicons', 'glyphicons-keyboard-wireless']);
 
     _toolbar.children.addAll([_keyboardButton, _gamepadButton]);
-
-    _setUpVideoFeeds();
-//    _setUpControl();
   }
 
   void _setUpVideoFeeds() {
@@ -178,17 +175,13 @@ class UpDroidTeleop extends TabController {
     }
   }
 
-  void registerMailbox() {
-
+  void _initTeleop(Msg m) {
+    _setUpVideoFeeds();
+//    _setUpControl();
   }
 
-  void registerEventHandlers() {
-    window.onResize.listen((e) {
-      if (_resizeTimer != null) _resizeTimer.cancel();
-      _resizeTimer = new Timer(new Duration(milliseconds: 500), () {
-        _setStreamDimensions();
-      });
-    });
+  void registerMailbox() {
+    mailbox.registerWebSocketEvent(EventType.ON_MESSAGE, 'NODES_UP', _initTeleop);
   }
 
   void _setStreamDimensions() {
@@ -209,6 +202,15 @@ class UpDroidTeleop extends TabController {
       double margin = (containerDiv.contentEdge.width - _streamLeft.contentEdge.width) / 2;
       _streamLeft.style.margin = '0 ${margin.toString()}px 0 ${margin.toString()}px';
     }
+  }
+
+  void registerEventHandlers() {
+    window.onResize.listen((e) {
+      if (_resizeTimer != null) _resizeTimer.cancel();
+      _resizeTimer = new Timer(new Duration(milliseconds: 500), () {
+        _setStreamDimensions();
+      });
+    });
   }
 
   Element get elementToFocus => containerDiv;
