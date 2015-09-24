@@ -42,8 +42,8 @@ class CmdrTeleop extends Tab {
     Completer c = new Completer();
     Process.start('bash', ['-c', '. ${_uproot.path}/catkin_ws/devel/setup.bash && roslaunch upcom_teleop upcom_teleop.launch video_only:=${videoOnly.toString()}'], runInShell: true).then((process) {
       _shell = process;
-      stdout.addStream(process.stdout);
-      stderr.addStream(process.stderr);
+      //stdout.addStream(process.stdout);
+      //stderr.addStream(process.stderr);
 
       bool nodesUp = false;
 
