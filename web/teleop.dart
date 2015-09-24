@@ -13,6 +13,8 @@ class UpDroidTeleop extends TabController {
     List menu = [
       {'title': 'File', 'items': [
         {'type': 'toggle', 'title': 'Close Tab'}]},
+      {'title': 'Video', 'items': [
+        {'type': 'toggle', 'title': 'Swap Cameras'}]},
       {'title': 'Controllers', 'items': []}
     ];
     return menu;
@@ -21,13 +23,17 @@ class UpDroidTeleop extends TabController {
   DivElement containerDiv, _toolbar;
 
   WebSocket _ws;
-  ImageElement _streamLeft, _streamRight;
+  ImageElement _mainStream, _thumbnailStream;
   Timer _resizeTimer;
   SpanElement _gamepadButton, _keyboardButton;
+  String _leftImageSrc, _rightImageSrc, _mainImageSrc, _thumbnailImageSrc;
+  AnchorElement _swapCamerasButton;
 
   UpDroidTeleop() :
   super(UpDroidTeleop.names, getMenuConfig(), 'tabs/upcom-teleop/teleop.css') {
-
+    String ip = window.location.host.split(':')[0];
+    _leftImageSrc = 'http://$ip:12062/stream?topic=/stereo/left/image_raw';
+    _rightImageSrc = 'http://$ip:12062/stream?topic=/stereo/right/image_raw';
   }
 
   void setUpController() {
@@ -36,6 +42,8 @@ class UpDroidTeleop extends TabController {
       ..id = '$refName-$id-container'
       ..classes.add('$refName-container');
     view.content.children.add(containerDiv);
+
+    _swapCamerasButton = view.refMap['swap-cameras'];
 
     // Set up the toolbar.
     _toolbar = new DivElement()
@@ -52,23 +60,28 @@ class UpDroidTeleop extends TabController {
     _toolbar.children.addAll([_keyboardButton, _gamepadButton]);
   }
 
-  void _setUpVideoFeeds() {
-    String ip = window.location.host.split(':')[0];
+  void _setMainFeed(String src) {
 
-    _streamLeft = new ImageElement(src: 'http://$ip:12062/stream?topic=/stereo/left/image_raw')
+    _mainStream = new ImageElement(src: src)
       ..id = '$refName-$id-stream'
       ..classes.add('$refName-stream');
-    containerDiv.children.add(_streamLeft);
-
-    _streamRight = new ImageElement(src: 'http://$ip:12062/stream?topic=/stereo/right/image_raw')
-      ..id = '$refName-$id-stream'
-      ..classes.addAll(['$refName-stream', 'small']);
-    containerDiv.children.add(_streamRight);
+    containerDiv.children.add(_mainStream);
 
     // Timer to let the streams settle.
     new Timer(new Duration(milliseconds: 500), () {
       _setStreamDimensions();
     });
+
+    _mainImageSrc = src;
+  }
+
+  void _setThumbnailFeed(src) {
+    _thumbnailStream = new ImageElement(src: src)
+      ..id = '$refName-$id-stream'
+      ..classes.addAll(['$refName-stream', 'small']);
+    containerDiv.children.add(_thumbnailStream);
+
+    _thumbnailImageSrc = src;
   }
 
   void _setUpControl() {
@@ -176,7 +189,8 @@ class UpDroidTeleop extends TabController {
   }
 
   void _initTeleop(Msg m) {
-    _setUpVideoFeeds();
+    _setMainFeed(_leftImageSrc);
+    _setThumbnailFeed(_rightImageSrc);
 //    _setUpControl();
   }
 
@@ -184,27 +198,37 @@ class UpDroidTeleop extends TabController {
     mailbox.registerWebSocketEvent(EventType.ON_MESSAGE, 'NODES_UP', _initTeleop);
   }
 
+  void _swapImageFeeds() {
+    _mainStream.remove();
+    _thumbnailStream.remove();
+
+    _setMainFeed(_mainImageSrc == _leftImageSrc ? _rightImageSrc : _leftImageSrc);
+    _setThumbnailFeed(_thumbnailImageSrc == _leftImageSrc ? _rightImageSrc : _leftImageSrc);
+  }
+
   void _setStreamDimensions() {
     if (containerDiv.contentEdge.width < containerDiv.contentEdge.height) {
       // Usually normal mode.
-      _streamLeft.style.width = '100%';
+      _mainStream.style.width = '100%';
       String newHeight = '${(containerDiv.contentEdge.width * 240 / 320).toString()}px';
-      _streamLeft.style.height = newHeight;
+      _mainStream.style.height = newHeight;
 
-      double margin = (containerDiv.contentEdge.height - _streamLeft.contentEdge.height) / 2;
-      _streamLeft.style.margin = '${margin.toString()}px 0 ${margin.toString()}px 0';
+      double margin = (containerDiv.contentEdge.height - _mainStream.contentEdge.height) / 2;
+      _mainStream.style.margin = '${margin.toString()}px 0 ${margin.toString()}px 0';
     } else {
       // Usually maximized mode.
-      _streamLeft.style.height = 'calc(100% - 32px)';
+      _mainStream.style.height = 'calc(100% - 32px)';
       String newWidth = '${(containerDiv.contentEdge.height * 320 / 240).toString()}px';
-      _streamLeft.style.width = newWidth;
+      _mainStream.style.width = newWidth;
 
-      double margin = (containerDiv.contentEdge.width - _streamLeft.contentEdge.width) / 2;
-      _streamLeft.style.margin = '0 ${margin.toString()}px 0 ${margin.toString()}px';
+      double margin = (containerDiv.contentEdge.width - _mainStream.contentEdge.width) / 2;
+      _mainStream.style.margin = '0 ${margin.toString()}px 0 ${margin.toString()}px';
     }
   }
 
   void registerEventHandlers() {
+    _swapCamerasButton.onClick.listen((e) => _swapImageFeeds());
+
     window.onResize.listen((e) {
       if (_resizeTimer != null) _resizeTimer.cancel();
       _resizeTimer = new Timer(new Duration(milliseconds: 500), () {
