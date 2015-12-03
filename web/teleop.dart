@@ -32,8 +32,8 @@ class UpDroidTeleop extends TabController {
   UpDroidTeleop() :
   super(UpDroidTeleop.names, getMenuConfig(), 'tabs/upcom-teleop/teleop.css') {
     String ip = window.location.host.split(':')[0];
-    _leftImageSrc = 'http://$ip:12062/stream?topic=/stereo/left/image_raw';
-    _rightImageSrc = 'http://$ip:12062/stream?topic=/stereo/right/image_raw';
+    _leftImageSrc = 'http://10.4.0.215:12062/stream?topic=/stereo/left/image_raw';
+    _rightImageSrc = 'http://10.4.0.215:12062/stream?topic=/stereo/right/image_raw';
   }
 
   void setUpController() {
@@ -61,7 +61,6 @@ class UpDroidTeleop extends TabController {
   }
 
   void _setMainFeed(String src) {
-
     _mainStream = new ImageElement(src: src)
       ..id = '$refName-$id-stream'
       ..classes.add('$refName-stream');
@@ -166,6 +165,7 @@ class UpDroidTeleop extends TabController {
         payloadString += ']';
 
         if (containerDiv.children[1].children[1].text != 'disconnected') {
+          print('payload: $payloadString');
           _ws.send(payloadString);
         };
       });

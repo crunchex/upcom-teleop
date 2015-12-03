@@ -32,48 +32,52 @@
     z-index: 10;
 }
 
-.upcom-teleop-icon {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -200px);
-}
+/*.upcom-teleop-icon {*/
+    /*display: none;*/
+    /*position: absolute;*/
+    /*top: 50%;*/
+    /*left: 50%;*/
+    /*transform: translate(-50%, -200px);*/
+/*}*/
 
-.upcom-teleop-axis-span {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-}
+/*.upcom-teleop-axis-span {*/
+    /*display: none;*/
+    /*position: absolute;*/
+    /*top: 50%;*/
+    /*left: 50%;*/
+/*}*/
 
-.upcom-teleop-axis-label {
-    display: inline;
-    color: #ffffff;
-    font-size: 16px;
-}
+/*.upcom-teleop-axis-label {*/
+    /*display: none;*/
+    /*display: inline;*/
+    /*color: #ffffff;*/
+    /*font-size: 16px;*/
+/*}*/
 
-.upcom-teleop-axis-data {
-    display: inline;
-    color: #ffffff;
-    font-size: 16px;
-}
+/*.upcom-teleop-axis-data {*/
+    /*display: none;*/
+    /*display: inline;*/
+    /*color: #ffffff;*/
+    /*font-size: 16px;*/
+/*}*/
 
-.upcom-teleop-button-span {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-}
+/*.upcom-teleop-button-span {*/
+    /*position: absolute;*/
+    /*top: 50%;*/
+    /*left: 50%;*/
+/*}*/
 
-.upcom-teleop-button-label {
-    display: inline;
-    color: #ffffff;
-    font-size: 16px;
-}
+/*.upcom-teleop-button-label {*/
+    /*display: inline;*/
+    /*color: #ffffff;*/
+    /*font-size: 16px;*/
+/*}*/
 
-.upcom-teleop-button-data {
-    display: inline;
-    color: #ffffff;
-    font-size: 16px;
-}
+/*.upcom-teleop-button-data {*/
+    /*display: inline;*/
+    /*color: #ffffff;*/
+    /*font-size: 16px;*/
+/*}*/
 
 .toolbar {
     width: 100%;
