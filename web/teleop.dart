@@ -45,6 +45,27 @@ class UpDroidTeleop extends TabController {
 
     _swapCamerasButton = view.refMap['swap-cameras'];
 
+    DivElement keyboardDiv = new DivElement()
+      ..classes.add('$refName-keyboard');
+    containerDiv.children.add(keyboardDiv);
+
+    // Set up the keyboard overlay.
+    ImageElement keyboardBackground = new ImageElement(src: 'tabs/$refName/87_keyboard_bg.jpg')
+      ..classes.add('$refName-keyboard-bg');
+    keyboardDiv.children.add(keyboardBackground);
+
+    ImageElement keyboardBase = new ImageElement(src: 'tabs/$refName/87-keybase.png')
+      ..classes.add('$refName-keyboard-base');
+    keyboardDiv.children.add(keyboardBase);
+
+    ImageElement keyboardMods = new ImageElement(src: 'tabs/$refName/87-mods-modern.png')
+      ..classes.add('$refName-keyboard-mods');
+    keyboardDiv.children.add(keyboardMods);
+
+    ImageElement keyboardKeys = new ImageElement(src: 'tabs/$refName/87-modern.png')
+      ..classes.add('$refName-keyboard-keys');
+    keyboardDiv.children.add(keyboardKeys);
+
     // Set up the toolbar.
     _toolbar = new DivElement()
       ..classes.add('toolbar');

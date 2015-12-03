@@ -79,6 +79,39 @@
     /*font-size: 16px;*/
 /*}*/
 
+.upcom-teleop-keyboard {
+    position: relative;
+    width: 773px;
+    height: 298px;
+}
+
+.upcom-teleop-keyboard-bg {
+    position: absolute;
+    width: 773px;
+    height: 298px;
+}
+
+.upcom-teleop-keyboard-base {
+    top: 18px;
+    left: 12px;
+    position: absolute;
+    width: 748px;
+}
+
+.upcom-teleop-keyboard-mods {
+    top: 18px;
+    left: 12px;
+    position: absolute;
+    width: 748px;
+}
+
+.upcom-teleop-keyboard-keys {
+    top: 18px;
+    left: 12px;
+    position: absolute;
+    width: 748px;
+}
+
 .toolbar {
     width: 100%;
     padding: 5px;
