@@ -23,8 +23,7 @@ class UpDroidTeleop extends TabController {
   DivElement containerDiv, _toolbar;
 
   WebSocket _ws;
-  ImageElement _mainStream, _thumbnailStream;
-  VideoElement _mainVideo, _thumbnailVideo;
+  var _mainStream, _thumbnailStream;
   Timer _resizeTimer;
   SpanElement _gamepadButton, _keyboardButton;
   String _leftImageSrc, _rightImageSrc, _mainImageSrc, _thumbnailImageSrc;
@@ -32,7 +31,7 @@ class UpDroidTeleop extends TabController {
 
   // Use a pre-recorded video file instead of livestreams.
   // FOR DEVELOPMENT ONLY.
-  bool _demoMode = true;
+  bool _demoMode = false;
 
   UpDroidTeleop() :
   super(UpDroidTeleop.names, getMenuConfig(), 'tabs/upcom-teleop/teleop.css') {
@@ -95,9 +94,22 @@ class UpDroidTeleop extends TabController {
   }
 
   void _setMainFeed(String src) {
-    _mainStream = new ImageElement(src: src)
-      ..id = '$refName-$id-stream'
-      ..classes.add('$refName-stream');
+    if (_demoMode) {
+      _mainStream = new VideoElement()
+        ..id = '$refName-$id-main-video'
+        ..classes.add('$refName-video')
+        ..loop = true
+        ..autoplay = true;
+
+      SourceElement mainVideoSource = new SourceElement()
+        ..src = src;
+      _mainStream.children.add(mainVideoSource);
+    } else {
+      _mainStream = new ImageElement(src: src)
+        ..id = '$refName-$id-main-stream'
+        ..classes.add('$refName-stream');
+    }
+
     containerDiv.children.add(_mainStream);
 
     // Timer to let the streams settle.
@@ -109,45 +121,23 @@ class UpDroidTeleop extends TabController {
   }
 
   void _setThumbnailFeed(src) {
-    _thumbnailStream = new ImageElement(src: src)
-      ..id = '$refName-$id-stream'
-      ..classes.addAll(['$refName-stream', 'small']);
+    if (_demoMode) {
+      _thumbnailStream = new VideoElement()
+        ..id = '$refName-$id-thumbnail-video'
+        ..classes.addAll(['$refName-video', 'small'])
+        ..loop = true
+        ..autoplay = true;
+
+      SourceElement thumbnailVideoSource = new SourceElement()
+        ..src = src;
+      _thumbnailStream.children.add(thumbnailVideoSource);
+    } else {
+      _thumbnailStream = new ImageElement(src: src)
+        ..id = '$refName-$id-thumbnail-stream'
+        ..classes.addAll(['$refName-stream', 'small']);
+    }
+
     containerDiv.children.add(_thumbnailStream);
-
-    _thumbnailImageSrc = src;
-  }
-
-  void _setMainVideo(String src) {
-    _mainVideo = new VideoElement()
-      ..id = '$refName-$id-video'
-      ..classes.add('$refName-video')
-      ..loop = true
-      ..autoplay = true;
-    containerDiv.children.add(_mainVideo);
-
-    SourceElement mainVideoSource = new SourceElement()
-      ..src = src;
-    _mainVideo.children.add(mainVideoSource);
-
-    // Timer to let the streams settle.
-    new Timer(new Duration(milliseconds: 500), () {
-      _setVideoDimensions();
-    });
-
-    _mainImageSrc = src;
-  }
-
-  void _setThumbnailVideo(src) {
-    _thumbnailVideo = new VideoElement()
-      ..id = '$refName-$id-video'
-      ..classes.addAll(['$refName-video', 'small'])
-      ..loop = true
-      ..autoplay = true;
-    containerDiv.children.add(_thumbnailVideo);
-
-    SourceElement thumbnailVideoSource = new SourceElement()
-      ..src = src;
-    _thumbnailVideo.children.add(thumbnailVideoSource);
 
     _thumbnailImageSrc = src;
   }
@@ -258,13 +248,8 @@ class UpDroidTeleop extends TabController {
   }
 
   void _initTeleop(Msg m) {
-    if (_demoMode) {
-      _setMainVideo(_leftImageSrc);
-      _setThumbnailVideo(_rightImageSrc);
-    } else {
-      _setMainFeed(_leftImageSrc);
-      _setThumbnailFeed(_rightImageSrc);
-    }
+    _setMainFeed(_leftImageSrc);
+    _setThumbnailFeed(_rightImageSrc);
 //    _setUpControl();
   }
 
@@ -276,16 +261,8 @@ class UpDroidTeleop extends TabController {
     _mainStream.remove();
     _thumbnailStream.remove();
 
-    String mainSrc = _mainImageSrc == _leftImageSrc ? _rightImageSrc : _leftImageSrc;
-    String thumbnailSrc = _thumbnailImageSrc == _leftImageSrc ? _rightImageSrc : _leftImageSrc;
-
-    if (_demoMode) {
-      _setMainVideo(mainSrc);
-      _setThumbnailVideo(thumbnailSrc);
-    } else {
-      _setMainFeed(mainSrc);
-      _setThumbnailFeed(thumbnailSrc);
-    }
+    _setMainFeed(_mainImageSrc == _leftImageSrc ? _rightImageSrc : _leftImageSrc);
+    _setThumbnailFeed(_thumbnailImageSrc == _leftImageSrc ? _rightImageSrc : _leftImageSrc);
   }
 
   void _setStreamDimensions() {
@@ -308,33 +285,13 @@ class UpDroidTeleop extends TabController {
     }
   }
 
-  void _setVideoDimensions() {
-    if (containerDiv.contentEdge.width < containerDiv.contentEdge.height) {
-      // Usually normal mode.
-      _mainVideo.style.width = '100%';
-      String newHeight = '${(containerDiv.contentEdge.width * 240 / 320).toString()}px';
-      _mainVideo.style.height = newHeight;
-
-      double margin = (containerDiv.contentEdge.height - _mainVideo.contentEdge.height) / 2;
-      _mainVideo.style.margin = '${margin.toString()}px 0 ${margin.toString()}px 0';
-    } else {
-      // Usually maximized mode.
-      _mainVideo.style.height = 'calc(100% - 32px)';
-      String newWidth = '${(containerDiv.contentEdge.height * 320 / 240).toString()}px';
-      _mainVideo.style.width = newWidth;
-
-      double margin = (containerDiv.contentEdge.width - _mainVideo.contentEdge.width) / 2;
-      _mainVideo.style.margin = '0 ${margin.toString()}px 0 ${margin.toString()}px';
-    }
-  }
-
   void registerEventHandlers() {
     _swapCamerasButton.onClick.listen((e) => _swapImageFeeds());
 
     window.onResize.listen((e) {
       if (_resizeTimer != null) _resizeTimer.cancel();
       _resizeTimer = new Timer(new Duration(milliseconds: 500), () {
-        _demoMode ? _setVideoDimensions() : _setStreamDimensions();
+        _setStreamDimensions();
       });
     });
   }
