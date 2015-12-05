@@ -24,16 +24,27 @@ class UpDroidTeleop extends TabController {
 
   WebSocket _ws;
   ImageElement _mainStream, _thumbnailStream;
+  VideoElement _mainVideo, _thumbnailVideo;
   Timer _resizeTimer;
   SpanElement _gamepadButton, _keyboardButton;
   String _leftImageSrc, _rightImageSrc, _mainImageSrc, _thumbnailImageSrc;
   AnchorElement _swapCamerasButton;
 
+  // Use a pre-recorded video file instead of livestreams.
+  // FOR DEVELOPMENT ONLY.
+  bool _demoMode = false;
+
   UpDroidTeleop() :
   super(UpDroidTeleop.names, getMenuConfig(), 'tabs/upcom-teleop/teleop.css') {
     String ip = window.location.host.split(':')[0];
-    _leftImageSrc = 'http://10.4.0.215:12062/stream?topic=/stereo/left/image_raw';
-    _rightImageSrc = 'http://10.4.0.215:12062/stream?topic=/stereo/right/image_raw';
+
+    if (_demoMode) {
+      _leftImageSrc = 'tabs/upcom-teleop/pov-l.m4v';
+      _rightImageSrc = 'tabs/upcom-teleop/pov-r.m4v';
+    } else {
+      _leftImageSrc = 'http://10.4.0.215:12062/stream?topic=/stereo/left/image_raw';
+      _rightImageSrc = 'http://10.4.0.215:12062/stream?topic=/stereo/right/image_raw';
+    }
   }
 
   void setUpController() {
@@ -45,26 +56,28 @@ class UpDroidTeleop extends TabController {
 
     _swapCamerasButton = view.refMap['swap-cameras'];
 
-    DivElement keyboardDiv = new DivElement()
-      ..classes.add('$refName-keyboard');
-    containerDiv.children.add(keyboardDiv);
+    if (_demoMode) _initTeleop(new Msg('DUMMY'));
 
-    // Set up the keyboard overlay.
-    ImageElement keyboardBackground = new ImageElement(src: 'tabs/$refName/87_keyboard_bg.jpg')
-      ..classes.add('$refName-keyboard-bg');
-    keyboardDiv.children.add(keyboardBackground);
-
-    ImageElement keyboardBase = new ImageElement(src: 'tabs/$refName/87-keybase.png')
-      ..classes.add('$refName-keyboard-base');
-    keyboardDiv.children.add(keyboardBase);
-
-    ImageElement keyboardMods = new ImageElement(src: 'tabs/$refName/87-mods-modern.png')
-      ..classes.add('$refName-keyboard-mods');
-    keyboardDiv.children.add(keyboardMods);
-
-    ImageElement keyboardKeys = new ImageElement(src: 'tabs/$refName/87-modern.png')
-      ..classes.add('$refName-keyboard-keys');
-    keyboardDiv.children.add(keyboardKeys);
+//    DivElement keyboardDiv = new DivElement()
+//      ..classes.add('$refName-keyboard');
+//    containerDiv.children.add(keyboardDiv);
+//
+//    // Set up the keyboard overlay.
+//    ImageElement keyboardBackground = new ImageElement(src: 'tabs/$refName/87_keyboard_bg.jpg')
+//      ..classes.add('$refName-keyboard-bg');
+//    keyboardDiv.children.add(keyboardBackground);
+//
+//    ImageElement keyboardBase = new ImageElement(src: 'tabs/$refName/87-keybase.png')
+//      ..classes.add('$refName-keyboard-keys');
+//    keyboardDiv.children.add(keyboardBase);
+//
+//    ImageElement keyboardMods = new ImageElement(src: 'tabs/$refName/87-mods-modern.png')
+//      ..classes.add('$refName-keyboard-keys');
+//    keyboardDiv.children.add(keyboardMods);
+//
+//    ImageElement keyboardKeys = new ImageElement(src: 'tabs/$refName/87-modern.png')
+//      ..classes.add('$refName-keyboard-keys');
+//    keyboardDiv.children.add(keyboardKeys);
 
     // Set up the toolbar.
     _toolbar = new DivElement()
@@ -100,6 +113,41 @@ class UpDroidTeleop extends TabController {
       ..id = '$refName-$id-stream'
       ..classes.addAll(['$refName-stream', 'small']);
     containerDiv.children.add(_thumbnailStream);
+
+    _thumbnailImageSrc = src;
+  }
+
+  void _setMainVideo(String src) {
+    _mainVideo = new VideoElement()
+      ..id = '$refName-$id-video'
+      ..classes.add('$refName-video')
+      ..loop = true
+      ..autoplay = true;
+    containerDiv.children.add(_mainVideo);
+
+    SourceElement mainVideoSource = new SourceElement()
+      ..src = src;
+    _mainVideo.children.add(mainVideoSource);
+
+    // Timer to let the streams settle.
+    new Timer(new Duration(milliseconds: 500), () {
+      _setVideoDimensions();
+    });
+
+    _mainImageSrc = src;
+  }
+
+  void _setThumbnailVideo(src) {
+    _thumbnailVideo = new VideoElement()
+      ..id = '$refName-$id-video'
+      ..classes.addAll(['$refName-video', 'small'])
+      ..loop = true
+      ..autoplay = true;
+    containerDiv.children.add(_thumbnailVideo);
+
+    SourceElement thumbnailVideoSource = new SourceElement()
+      ..src = src;
+    _thumbnailVideo.children.add(thumbnailVideoSource);
 
     _thumbnailImageSrc = src;
   }
@@ -210,13 +258,18 @@ class UpDroidTeleop extends TabController {
   }
 
   void _initTeleop(Msg m) {
-    _setMainFeed(_leftImageSrc);
-    _setThumbnailFeed(_rightImageSrc);
+    if (_demoMode) {
+      _setMainVideo(_leftImageSrc);
+      _setThumbnailVideo(_rightImageSrc);
+    } else {
+      _setMainFeed(_leftImageSrc);
+      _setThumbnailFeed(_rightImageSrc);
+    }
 //    _setUpControl();
   }
 
   void registerMailbox() {
-    mailbox.registerWebSocketEvent(EventType.ON_MESSAGE, 'NODES_UP', _initTeleop);
+    if (!_demoMode) mailbox.registerWebSocketEvent(EventType.ON_MESSAGE, 'NODES_UP', _initTeleop);
   }
 
   void _swapImageFeeds() {
@@ -247,13 +300,33 @@ class UpDroidTeleop extends TabController {
     }
   }
 
+  void _setVideoDimensions() {
+    if (containerDiv.contentEdge.width < containerDiv.contentEdge.height) {
+      // Usually normal mode.
+      _mainVideo.style.width = '100%';
+      String newHeight = '${(containerDiv.contentEdge.width * 240 / 320).toString()}px';
+      _mainVideo.style.height = newHeight;
+
+      double margin = (containerDiv.contentEdge.height - _mainVideo.contentEdge.height) / 2;
+      _mainVideo.style.margin = '${margin.toString()}px 0 ${margin.toString()}px 0';
+    } else {
+      // Usually maximized mode.
+      _mainVideo.style.height = 'calc(100% - 32px)';
+      String newWidth = '${(containerDiv.contentEdge.height * 320 / 240).toString()}px';
+      _mainVideo.style.width = newWidth;
+
+      double margin = (containerDiv.contentEdge.width - _mainVideo.contentEdge.width) / 2;
+      _mainVideo.style.margin = '0 ${margin.toString()}px 0 ${margin.toString()}px';
+    }
+  }
+
   void registerEventHandlers() {
     _swapCamerasButton.onClick.listen((e) => _swapImageFeeds());
 
     window.onResize.listen((e) {
       if (_resizeTimer != null) _resizeTimer.cancel();
       _resizeTimer = new Timer(new Duration(milliseconds: 500), () {
-        _setStreamDimensions();
+        _demoMode ? _setVideoDimensions() : _setStreamDimensions();
       });
     });
   }

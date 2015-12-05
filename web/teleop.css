@@ -21,7 +21,24 @@
     height: 240px;
 }
 
+.upcom-teleop-video {
+    position: absolute;
+    width: 1440px;
+    height: 1080px;
+}
+
 .upcom-teleop-stream.small {
+    position: relative;
+    float: right;
+    margin: 10px;
+    width: 160px;
+    height: 120px;
+    border-radius: 10px;
+    box-shadow: 3px 3px 30px 1px #0c0c0c;
+    z-index: 10;
+}
+
+.upcom-teleop-video.small {
     position: relative;
     float: right;
     margin: 10px;
@@ -80,36 +97,17 @@
 /*}*/
 
 .upcom-teleop-keyboard {
-    position: relative;
-    width: 773px;
-    height: 298px;
-}
-
-.upcom-teleop-keyboard-bg {
     position: absolute;
     width: 773px;
     height: 298px;
-}
-
-.upcom-teleop-keyboard-base {
-    top: 18px;
-    left: 12px;
-    position: absolute;
-    width: 748px;
-}
-
-.upcom-teleop-keyboard-mods {
-    top: 18px;
-    left: 12px;
-    position: absolute;
-    width: 748px;
+    z-index: 1;
 }
 
 .upcom-teleop-keyboard-keys {
+    position:absolute;
+    width: 748px;
     top: 18px;
     left: 12px;
-    position: absolute;
-    width: 748px;
 }
 
 .toolbar {
