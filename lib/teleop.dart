@@ -1,5 +1,6 @@
 library cmdr_teleop;
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:isolate';
@@ -26,7 +27,9 @@ class CmdrTeleop extends Tab {
     '/teleop_twist_joy',
   ];
 
+  Directory _uproot;
   Process _shell;
+  List _nodes;
 
   CmdrTeleop(SendPort sp, List args) :
   super(CmdrTeleop.names, sp, args) {
