@@ -32,7 +32,7 @@ class UpDroidTeleop extends TabController {
 
   // Use a pre-recorded video file instead of livestreams.
   // FOR DEVELOPMENT ONLY.
-  bool _demoMode = false;
+  bool _demoMode = true;
 
   UpDroidTeleop() :
   super(UpDroidTeleop.names, getMenuConfig(), 'tabs/upcom-teleop/teleop.css') {
@@ -276,8 +276,16 @@ class UpDroidTeleop extends TabController {
     _mainStream.remove();
     _thumbnailStream.remove();
 
-    _setMainFeed(_mainImageSrc == _leftImageSrc ? _rightImageSrc : _leftImageSrc);
-    _setThumbnailFeed(_thumbnailImageSrc == _leftImageSrc ? _rightImageSrc : _leftImageSrc);
+    String mainSrc = _mainImageSrc == _leftImageSrc ? _rightImageSrc : _leftImageSrc;
+    String thumbnailSrc = _thumbnailImageSrc == _leftImageSrc ? _rightImageSrc : _leftImageSrc;
+
+    if (_demoMode) {
+      _setMainVideo(mainSrc);
+      _setThumbnailVideo(thumbnailSrc);
+    } else {
+      _setMainFeed(mainSrc);
+      _setThumbnailFeed(thumbnailSrc);
+    }
   }
 
   void _setStreamDimensions() {
