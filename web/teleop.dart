@@ -13,7 +13,7 @@ class UpDroidTeleop extends TabController {
     List menu = [
       {'title': 'File', 'items': [
         {'type': 'toggle', 'title': 'Close Tab'}]},
-      {'title': 'Video', 'items': [
+      {'title': 'View', 'items': [
         {'type': 'toggle', 'title': 'Swap Cameras'}]},
       {'title': 'Controllers', 'items': []}
     ];
