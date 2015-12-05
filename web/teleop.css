@@ -1,0 +1,130 @@
+.upcom-teleop {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow-y: hidden;
+    overflow-x: hidden;
+    background-color: #eaecec;
+}
+
+.upcom-teleop-container {
+    width: 100%;
+    height: calc(100% - 32px);
+    background-color: #000000;
+    outline: none;
+    tab-index: -1;
+}
+
+.upcom-teleop-stream {
+    position: absolute;
+    width: 320px;
+    height: 240px;
+}
+
+.upcom-teleop-video {
+    position: absolute;
+    width: 1440px;
+    height: 1080px;
+}
+
+.upcom-teleop-stream.small {
+    position: relative;
+    float: right;
+    margin: 10px;
+    width: 160px;
+    height: 120px;
+    border-radius: 10px;
+    box-shadow: 3px 3px 30px 1px #0c0c0c;
+    z-index: 10;
+}
+
+.upcom-teleop-video.small {
+    position: relative;
+    float: right;
+    margin: 10px;
+    width: 160px;
+    height: 120px;
+    border-radius: 10px;
+    box-shadow: 3px 3px 30px 1px #0c0c0c;
+    z-index: 10;
+}
+
+/*.upcom-teleop-icon {*/
+    /*display: none;*/
+    /*position: absolute;*/
+    /*top: 50%;*/
+    /*left: 50%;*/
+    /*transform: translate(-50%, -200px);*/
+/*}*/
+
+/*.upcom-teleop-axis-span {*/
+    /*display: none;*/
+    /*position: absolute;*/
+    /*top: 50%;*/
+    /*left: 50%;*/
+/*}*/
+
+/*.upcom-teleop-axis-label {*/
+    /*display: none;*/
+    /*display: inline;*/
+    /*color: #ffffff;*/
+    /*font-size: 16px;*/
+/*}*/
+
+/*.upcom-teleop-axis-data {*/
+    /*display: none;*/
+    /*display: inline;*/
+    /*color: #ffffff;*/
+    /*font-size: 16px;*/
+/*}*/
+
+/*.upcom-teleop-button-span {*/
+    /*position: absolute;*/
+    /*top: 50%;*/
+    /*left: 50%;*/
+/*}*/
+
+/*.upcom-teleop-button-label {*/
+    /*display: inline;*/
+    /*color: #ffffff;*/
+    /*font-size: 16px;*/
+/*}*/
+
+/*.upcom-teleop-button-data {*/
+    /*display: inline;*/
+    /*color: #ffffff;*/
+    /*font-size: 16px;*/
+/*}*/
+
+.upcom-teleop-keyboard {
+    position: absolute;
+    width: 773px;
+    height: 298px;
+    z-index: 1;
+}
+
+.upcom-teleop-keyboard-keys {
+    position:absolute;
+    width: 748px;
+    top: 18px;
+    left: 12px;
+}
+
+.toolbar {
+    width: 100%;
+    padding: 5px;
+    vertical-align: middle;
+    border-top: 1px solid #e3e3e3;
+    font-size: 16px;
+}
+
+.toolbar>span {
+    float: right;
+    padding: 0 5px 0 5px;
+    cursor: pointer;
+}
+
+.toolbar>span.inactive {
+    color: #7e7e7e;
+    cursor: default;
+}

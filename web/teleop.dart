@@ -4,7 +4,7 @@ import 'dart:html';
 import 'dart:async';
 import 'dart:js' as js;
 
-import 'package:upcom-api/web/tab/tab_controller.dart';
+import 'package:upcom-api/tab_frontend.dart';
 
 class UpDroidTeleop extends TabController {
   static final List<String> names = ['upcom-teleop', 'UpDroid Teleop', 'Teleop'];
@@ -13,86 +13,188 @@ class UpDroidTeleop extends TabController {
     List menu = [
       {'title': 'File', 'items': [
         {'type': 'toggle', 'title': 'Close Tab'}]},
+      {'title': 'Video', 'items': [
+        {'type': 'toggle', 'title': 'Swap Cameras'}]},
       {'title': 'Controllers', 'items': []}
     ];
     return menu;
   }
 
-  DivElement containerDiv;
+  DivElement containerDiv, _toolbar;
 
   WebSocket _ws;
+  ImageElement _mainStream, _thumbnailStream;
+  VideoElement _mainVideo, _thumbnailVideo;
+  Timer _resizeTimer;
+  SpanElement _gamepadButton, _keyboardButton;
+  String _leftImageSrc, _rightImageSrc, _mainImageSrc, _thumbnailImageSrc;
+  AnchorElement _swapCamerasButton;
+
+  // Use a pre-recorded video file instead of livestreams.
+  // FOR DEVELOPMENT ONLY.
+  bool _demoMode = false;
 
   UpDroidTeleop() :
-  super(UpDroidTeleop.names, getMenuConfig()) {
+  super(UpDroidTeleop.names, getMenuConfig(), 'tabs/upcom-teleop/teleop.css') {
+    String ip = window.location.host.split(':')[0];
 
+    if (_demoMode) {
+      _leftImageSrc = 'tabs/upcom-teleop/pov-l.m4v';
+      _rightImageSrc = 'tabs/upcom-teleop/pov-r.m4v';
+    } else {
+      _leftImageSrc = 'http://10.4.0.215:12062/stream?topic=/stereo/left/image_raw';
+      _rightImageSrc = 'http://10.4.0.215:12062/stream?topic=/stereo/right/image_raw';
+    }
   }
 
   void setUpController() {
     // Dummy div so that teleop fits with the onFocus API from tab controller.
     containerDiv = new DivElement()
-    ..style.width = '100%'
-    ..style.height = '100%'
-    ..style.backgroundColor = '#107C10'
-    ..style.outline = 'none'
-    ..tabIndex = -1;
+      ..id = '$refName-$id-container'
+      ..classes.add('$refName-container');
     view.content.children.add(containerDiv);
 
-    view.content.contentEdge.height = new Dimension.percent(100);
+    _swapCamerasButton = view.refMap['swap-cameras'];
 
+    if (_demoMode) _initTeleop(new Msg('DUMMY'));
+
+//    DivElement keyboardDiv = new DivElement()
+//      ..classes.add('$refName-keyboard');
+//    containerDiv.children.add(keyboardDiv);
+//
+//    // Set up the keyboard overlay.
+//    ImageElement keyboardBackground = new ImageElement(src: 'tabs/$refName/87_keyboard_bg.jpg')
+//      ..classes.add('$refName-keyboard-bg');
+//    keyboardDiv.children.add(keyboardBackground);
+//
+//    ImageElement keyboardBase = new ImageElement(src: 'tabs/$refName/87-keybase.png')
+//      ..classes.add('$refName-keyboard-keys');
+//    keyboardDiv.children.add(keyboardBase);
+//
+//    ImageElement keyboardMods = new ImageElement(src: 'tabs/$refName/87-mods-modern.png')
+//      ..classes.add('$refName-keyboard-keys');
+//    keyboardDiv.children.add(keyboardMods);
+//
+//    ImageElement keyboardKeys = new ImageElement(src: 'tabs/$refName/87-modern.png')
+//      ..classes.add('$refName-keyboard-keys');
+//    keyboardDiv.children.add(keyboardKeys);
+
+    // Set up the toolbar.
+    _toolbar = new DivElement()
+      ..classes.add('toolbar');
+    view.content.children.add(_toolbar);
+
+    _gamepadButton = new SpanElement()
+      ..title = 'Gamepad Control'
+      ..classes.addAll(['glyphicons', 'glyphicons-gamepad']);
+    _keyboardButton = new SpanElement()
+      ..title = 'Keyboard Control'
+      ..classes.addAll(['glyphicons', 'glyphicons-keyboard-wireless']);
+
+    _toolbar.children.addAll([_keyboardButton, _gamepadButton]);
+  }
+
+  void _setMainFeed(String src) {
+    _mainStream = new ImageElement(src: src)
+      ..id = '$refName-$id-stream'
+      ..classes.add('$refName-stream');
+    containerDiv.children.add(_mainStream);
+
+    // Timer to let the streams settle.
+    new Timer(new Duration(milliseconds: 500), () {
+      _setStreamDimensions();
+    });
+
+    _mainImageSrc = src;
+  }
+
+  void _setThumbnailFeed(src) {
+    _thumbnailStream = new ImageElement(src: src)
+      ..id = '$refName-$id-stream'
+      ..classes.addAll(['$refName-stream', 'small']);
+    containerDiv.children.add(_thumbnailStream);
+
+    _thumbnailImageSrc = src;
+  }
+
+  void _setMainVideo(String src) {
+    _mainVideo = new VideoElement()
+      ..id = '$refName-$id-video'
+      ..classes.add('$refName-video')
+      ..loop = true
+      ..autoplay = true;
+    containerDiv.children.add(_mainVideo);
+
+    SourceElement mainVideoSource = new SourceElement()
+      ..src = src;
+    _mainVideo.children.add(mainVideoSource);
+
+    // Timer to let the streams settle.
+    new Timer(new Duration(milliseconds: 500), () {
+      _setVideoDimensions();
+    });
+
+    _mainImageSrc = src;
+  }
+
+  void _setThumbnailVideo(src) {
+    _thumbnailVideo = new VideoElement()
+      ..id = '$refName-$id-video'
+      ..classes.addAll(['$refName-video', 'small'])
+      ..loop = true
+      ..autoplay = true;
+    containerDiv.children.add(_thumbnailVideo);
+
+    SourceElement thumbnailVideoSource = new SourceElement()
+      ..src = src;
+    _thumbnailVideo.children.add(thumbnailVideoSource);
+
+    _thumbnailImageSrc = src;
+  }
+
+  void _setUpControl() {
     // TODO: compress this svg (use that OS X tool).
     ImageElement image = new ImageElement(src:'tabs/$refName/xbox.svg')
-      ..style.position = 'absolute'
-      ..style.top = '50%'
-      ..style.left = '50%'
-      ..style.transform = 'translate(-50%, -200px)';
+      ..id = '$refName-$id-icon'
+      ..classes.add('$refName-icon');
     containerDiv.children.add(image);
 
     for (int i = 0; i < 4; i++) {
       SpanElement span = new SpanElement()
-        ..style.position = 'absolute'
-        ..style.top = '50%'
-        ..style.left = '50%'
+        ..id = '$refName-$id-axis-span-$i'
+        ..classes.add('$refName-axis-span')
         ..style.transform = 'translate(-50%, -${i * 20 + 50}px)';
       containerDiv.children.add(span);
 
       ParagraphElement axisLabel = new ParagraphElement()
         ..id = '$refName-$id-axis-label-$i'
-        ..style.display = 'inline'
-        ..style.color = '#ffffff'
-        ..style.fontSize = '16px'
+        ..classes.add('$refName-axis-label')
         ..text = 'Axis $i: ';
       span.children.add(axisLabel);
 
       ParagraphElement axisData = new ParagraphElement()
         ..id = '$refName-$id-axis-data-$i'
-        ..style.display = 'inline'
-        ..style.color = '#ffffff'
-        ..style.fontSize = '16px'
+        ..classes.add('$refName-axis-data')
         ..text = 'disconnected';
       span.children.add(axisData);
     }
 
     for (int i = 0; i < 17; i++) {
       SpanElement span = new SpanElement()
-        ..style.position = 'absolute'
-        ..style.top = '50%'
-        ..style.left = '50%'
+        ..id = '$refName-$id-button-span-$i'
+        ..classes.add('$refName-button-span')
         ..style.transform = 'translate(-50%, ${i * 20 - 30}px)';
       containerDiv.children.add(span);
 
       ParagraphElement buttonLabel = new ParagraphElement()
         ..id = '$refName-$id-button-label-$i'
-        ..style.display = 'inline'
-        ..style.color = '#ffffff'
-        ..style.fontSize = '16px'
+        ..classes.add('$refName-button-label')
         ..text = 'Button $i: ';
       span.children.add(buttonLabel);
 
       ParagraphElement buttonData = new ParagraphElement()
         ..id = '$refName-$id-button-data-$i'
-        ..style.display = 'inline'
-        ..style.color = '#ffffff'
-        ..style.fontSize = '16px'
+        ..classes.add('$refName-button-data')
         ..text = '0';
       span.children.add(buttonData);
     }
@@ -105,7 +207,7 @@ class UpDroidTeleop extends TabController {
     // Since the port here needs to be dynamic, the default needs to be replaced.
     _initWebSocket('ws://' + url + ':12060/$refName/$id/controller/0');
 
-    //_setGamepads();
+    _setGamepads();
   }
 
   void _initWebSocket(String url, [int retrySeconds = 2]) {
@@ -132,6 +234,7 @@ class UpDroidTeleop extends TabController {
         payloadString += ']';
 
         if (containerDiv.children[1].children[1].text != 'disconnected') {
+          print('payload: $payloadString');
           _ws.send(payloadString);
         };
       });
@@ -154,14 +257,78 @@ class UpDroidTeleop extends TabController {
     }
   }
 
-  //\/\/ Mailbox Handlers /\/\//
+  void _initTeleop(Msg m) {
+    if (_demoMode) {
+      _setMainVideo(_leftImageSrc);
+      _setThumbnailVideo(_rightImageSrc);
+    } else {
+      _setMainFeed(_leftImageSrc);
+      _setThumbnailFeed(_rightImageSrc);
+    }
+//    _setUpControl();
+  }
 
   void registerMailbox() {
+    if (!_demoMode) mailbox.registerWebSocketEvent(EventType.ON_MESSAGE, 'NODES_UP', _initTeleop);
+  }
 
+  void _swapImageFeeds() {
+    _mainStream.remove();
+    _thumbnailStream.remove();
+
+    _setMainFeed(_mainImageSrc == _leftImageSrc ? _rightImageSrc : _leftImageSrc);
+    _setThumbnailFeed(_thumbnailImageSrc == _leftImageSrc ? _rightImageSrc : _leftImageSrc);
+  }
+
+  void _setStreamDimensions() {
+    if (containerDiv.contentEdge.width < containerDiv.contentEdge.height) {
+      // Usually normal mode.
+      _mainStream.style.width = '100%';
+      String newHeight = '${(containerDiv.contentEdge.width * 240 / 320).toString()}px';
+      _mainStream.style.height = newHeight;
+
+      double margin = (containerDiv.contentEdge.height - _mainStream.contentEdge.height) / 2;
+      _mainStream.style.margin = '${margin.toString()}px 0 ${margin.toString()}px 0';
+    } else {
+      // Usually maximized mode.
+      _mainStream.style.height = 'calc(100% - 32px)';
+      String newWidth = '${(containerDiv.contentEdge.height * 320 / 240).toString()}px';
+      _mainStream.style.width = newWidth;
+
+      double margin = (containerDiv.contentEdge.width - _mainStream.contentEdge.width) / 2;
+      _mainStream.style.margin = '0 ${margin.toString()}px 0 ${margin.toString()}px';
+    }
+  }
+
+  void _setVideoDimensions() {
+    if (containerDiv.contentEdge.width < containerDiv.contentEdge.height) {
+      // Usually normal mode.
+      _mainVideo.style.width = '100%';
+      String newHeight = '${(containerDiv.contentEdge.width * 240 / 320).toString()}px';
+      _mainVideo.style.height = newHeight;
+
+      double margin = (containerDiv.contentEdge.height - _mainVideo.contentEdge.height) / 2;
+      _mainVideo.style.margin = '${margin.toString()}px 0 ${margin.toString()}px 0';
+    } else {
+      // Usually maximized mode.
+      _mainVideo.style.height = 'calc(100% - 32px)';
+      String newWidth = '${(containerDiv.contentEdge.height * 320 / 240).toString()}px';
+      _mainVideo.style.width = newWidth;
+
+      double margin = (containerDiv.contentEdge.width - _mainVideo.contentEdge.width) / 2;
+      _mainVideo.style.margin = '0 ${margin.toString()}px 0 ${margin.toString()}px';
+    }
   }
 
   void registerEventHandlers() {
+    _swapCamerasButton.onClick.listen((e) => _swapImageFeeds());
 
+    window.onResize.listen((e) {
+      if (_resizeTimer != null) _resizeTimer.cancel();
+      _resizeTimer = new Timer(new Duration(milliseconds: 500), () {
+        _demoMode ? _setVideoDimensions() : _setStreamDimensions();
+      });
+    });
   }
 
   Element get elementToFocus => containerDiv;
