@@ -20,10 +20,11 @@ class UpDroidTeleop extends TabController {
     return menu;
   }
 
-  DivElement containerDiv, _toolbar;
+  DivElement containerDiv, _toolbar, _mainStreamDiv, _thumbnailStreamDiv;
 
   WebSocket _ws;
   var _mainStream, _thumbnailStream;
+  ParagraphElement _mainStreamLabel, _thumbnailStreamLabel;
   Timer _resizeTimer;
   SpanElement _gamepadButton, _keyboardButton;
   String _leftImageSrc, _rightImageSrc, _mainImageSrc, _thumbnailImageSrc;
@@ -31,7 +32,7 @@ class UpDroidTeleop extends TabController {
 
   // Use a pre-recorded video file instead of livestreams.
   // FOR DEVELOPMENT ONLY.
-  bool _demoMode = false;
+  bool _demoMode = true;
 
   UpDroidTeleop() :
   super(UpDroidTeleop.names, getMenuConfig(), 'tabs/upcom-teleop/teleop.css') {
@@ -52,6 +53,24 @@ class UpDroidTeleop extends TabController {
       ..id = '$refName-$id-container'
       ..classes.add('$refName-container');
     view.content.children.add(containerDiv);
+
+    _mainStreamDiv = new DivElement();
+    containerDiv.children.add(_mainStreamDiv);
+
+    _thumbnailStreamDiv = new DivElement();
+    containerDiv.children.add(_thumbnailStreamDiv);
+
+    _mainStreamLabel = new ParagraphElement()
+      ..id = '$refName-$id-main-label'
+      ..classes.add('$refName-main-label')
+      ..text = 'Left Cam';
+    _mainStreamDiv.children.add(_mainStreamLabel);
+
+    _thumbnailStreamLabel = new ParagraphElement()
+      ..id = '$refName-$id-thumbnail-label'
+      ..classes.add('$refName-thumbnail-label')
+      ..text = 'Right Cam';
+    _thumbnailStreamDiv.children.add(_thumbnailStreamLabel);
 
     _swapCamerasButton = view.refMap['swap-cameras'];
 
@@ -97,20 +116,23 @@ class UpDroidTeleop extends TabController {
     if (_demoMode) {
       _mainStream = new VideoElement()
         ..id = '$refName-$id-main-video'
-        ..classes.add('$refName-video')
         ..loop = true
         ..autoplay = true;
 
       SourceElement mainVideoSource = new SourceElement()
         ..src = src;
       _mainStream.children.add(mainVideoSource);
+
+      _mainStreamDiv.classes.add('$refName-video');
     } else {
       _mainStream = new ImageElement(src: src)
-        ..id = '$refName-$id-main-stream'
-        ..classes.add('$refName-stream');
+        ..id = '$refName-$id-main-stream';
+
+      _mainStreamDiv.classes.add('$refName-stream');
     }
 
-    containerDiv.children.add(_mainStream);
+    _mainStream.classes.add('$refName-main');
+    _mainStreamDiv.children.add(_mainStream);
 
     // Timer to let the streams settle.
     new Timer(new Duration(milliseconds: 500), () {
@@ -124,20 +146,23 @@ class UpDroidTeleop extends TabController {
     if (_demoMode) {
       _thumbnailStream = new VideoElement()
         ..id = '$refName-$id-thumbnail-video'
-        ..classes.addAll(['$refName-video', 'small'])
         ..loop = true
         ..autoplay = true;
 
       SourceElement thumbnailVideoSource = new SourceElement()
         ..src = src;
       _thumbnailStream.children.add(thumbnailVideoSource);
+
+      _thumbnailStreamDiv.classes.addAll(['$refName-video', 'small']);
     } else {
       _thumbnailStream = new ImageElement(src: src)
-        ..id = '$refName-$id-thumbnail-stream'
-        ..classes.addAll(['$refName-stream', 'small']);
+        ..id = '$refName-$id-thumbnail-stream';
+
+      _thumbnailStreamDiv.classes.addAll(['$refName-stream', 'small']);
     }
 
-    containerDiv.children.add(_thumbnailStream);
+    _thumbnailStream.classes.add('$refName-thumbnail');
+    _thumbnailStreamDiv.children.add(_thumbnailStream);
 
     _thumbnailImageSrc = src;
   }
@@ -268,20 +293,20 @@ class UpDroidTeleop extends TabController {
   void _setStreamDimensions() {
     if (containerDiv.contentEdge.width < containerDiv.contentEdge.height) {
       // Usually normal mode.
-      _mainStream.style.width = '100%';
+      _mainStreamDiv.style.width = '100%';
       String newHeight = '${(containerDiv.contentEdge.width * 240 / 320).toString()}px';
-      _mainStream.style.height = newHeight;
+      _mainStreamDiv.style.height = newHeight;
 
-      double margin = (containerDiv.contentEdge.height - _mainStream.contentEdge.height) / 2;
-      _mainStream.style.margin = '${margin.toString()}px 0 ${margin.toString()}px 0';
+      double margin = (containerDiv.contentEdge.height - _mainStreamDiv.contentEdge.height) / 2;
+      _mainStreamDiv.style.margin = '${margin.toString()}px 0 ${margin.toString()}px 0';
     } else {
       // Usually maximized mode.
-      _mainStream.style.height = 'calc(100% - 32px)';
+      _mainStreamDiv.style.height = 'calc(100% - 32px)';
       String newWidth = '${(containerDiv.contentEdge.height * 320 / 240).toString()}px';
-      _mainStream.style.width = newWidth;
+      _mainStreamDiv.style.width = newWidth;
 
-      double margin = (containerDiv.contentEdge.width - _mainStream.contentEdge.width) / 2;
-      _mainStream.style.margin = '0 ${margin.toString()}px 0 ${margin.toString()}px';
+      double margin = (containerDiv.contentEdge.width - _mainStreamDiv.contentEdge.width) / 2;
+      _mainStreamDiv.style.margin = '0 ${margin.toString()}px 0 ${margin.toString()}px';
     }
   }
 
