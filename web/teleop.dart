@@ -110,6 +110,14 @@ class UpDroidTeleop extends TabController {
       ..classes.addAll(['glyphicons', 'glyphicons-keyboard-wireless']);
 
     _toolbar.children.addAll([_keyboardButton, _gamepadButton]);
+
+    List<Gamepad> gamepads = window.navigator.getGamepads();
+    for (Gamepad gamepad in gamepads) {
+      if (gamepad.connected) {
+        print('gamepad-${gamepad.id} connected');
+        EventStreamProvider<GamepadEvent> tabReadyStream = new EventStreamProvider();
+      }
+    }
   }
 
   void _setMainFeed(String src) {
