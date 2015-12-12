@@ -111,13 +111,13 @@ class UpDroidTeleop extends TabController {
 
     _toolbar.children.addAll([_keyboardButton, _gamepadButton]);
 
-    List<Gamepad> gamepads = window.navigator.getGamepads();
-    for (Gamepad gamepad in gamepads) {
-      if (gamepad.connected) {
-        print('gamepad-${gamepad.id} connected');
-        EventStreamProvider<GamepadEvent> tabReadyStream = new EventStreamProvider();
-      }
-    }
+//    List<Gamepad> gamepads = window.navigator.getGamepads();
+//    for (Gamepad gamepad in gamepads) {
+//      if (gamepad.connected) {
+//        print('gamepad-${gamepad.id} connected');
+//        EventStreamProvider<GamepadEvent> tabReadyStream = new EventStreamProvider();
+//      }
+//    }
   }
 
   void _setMainFeed(String src) {
