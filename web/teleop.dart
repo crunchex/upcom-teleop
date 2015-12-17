@@ -4,7 +4,9 @@ import 'dart:html';
 import 'dart:async';
 import 'dart:js' as js;
 
-import 'package:upcom-api/tab_frontend.dart';
+import 'package:upcom-api/web/mailbox/mailbox.dart';
+import 'package:upcom-api/web/tab/tab_controller.dart';
+import 'package:upcom-api/web/menu/plugin_menu.dart';
 
 class UpDroidTeleop extends TabController {
   static final List<String> names = ['upcom-teleop', 'UpDroid Teleop', 'Teleop'];
@@ -35,12 +37,12 @@ class UpDroidTeleop extends TabController {
   bool _demoMode = true;
 
   UpDroidTeleop() :
-  super(UpDroidTeleop.names, getMenuConfig(), 'tabs/upcom-teleop/teleop.css') {
+  super(UpDroidTeleop.names, true, true, getMenuConfig()) {
     String ip = window.location.host.split(':')[0];
 
     if (_demoMode) {
-      _leftImageSrc = 'tabs/upcom-teleop/pov-l.m4v';
-      _rightImageSrc = 'tabs/upcom-teleop/pov-r.m4v';
+      _leftImageSrc = 'plugins/upcom-teleop/pov-l.m4v';
+      _rightImageSrc = 'plugins/upcom-teleop/pov-r.m4v';
     } else {
       _leftImageSrc = 'http://10.4.0.215:12062/stream?topic=/stereo/left/image_raw';
       _rightImageSrc = 'http://10.4.0.215:12062/stream?topic=/stereo/right/image_raw';
@@ -52,7 +54,7 @@ class UpDroidTeleop extends TabController {
     containerDiv = new DivElement()
       ..id = '$refName-$id-container'
       ..classes.add('$refName-container');
-    view.content.children.add(containerDiv);
+    content.children.add(containerDiv);
 
     _mainStreamDiv = new DivElement();
     containerDiv.children.add(_mainStreamDiv);
@@ -72,7 +74,7 @@ class UpDroidTeleop extends TabController {
       ..text = 'Right Cam';
     _thumbnailStreamDiv.children.add(_thumbnailStreamLabel);
 
-    _swapCamerasButton = view.refMap['swap-cameras'];
+    _swapCamerasButton = refMap['Swap Cameras'];
 
     if (_demoMode) _initTeleop(new Msg('DUMMY'));
 
@@ -100,7 +102,7 @@ class UpDroidTeleop extends TabController {
     // Set up the toolbar.
     _toolbar = new DivElement()
       ..classes.add('toolbar');
-    view.content.children.add(_toolbar);
+    content.children.add(_toolbar);
 
     _gamepadButton = new SpanElement()
       ..title = 'Gamepad Control'
@@ -276,7 +278,7 @@ class UpDroidTeleop extends TabController {
     Map deviceIds = js.context['controllers'];
     //deviceIds.sort((a, b) => a.compareTo(b));
     for (int i = 0; i < deviceIds.keys.length; i++) {
-      view.addMenuItem({'type': 'toggle', 'title': 'Gamepad$i'}, '#$refName-$id-controllers');
+      addMenuItem(id, refName, {'type': 'toggle', 'title': 'Gamepad$i'}, refMap, '#$refName-$id-controllers');
     }
   }
 
