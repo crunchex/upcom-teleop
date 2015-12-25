@@ -50,5 +50,5 @@ else
 fi
 rm -rf $BUILDBIN/main.dart.deps
 
-# Copy over tabinfo.json -> build/bin
-cp $TOPDIR/lib/tabinfo.json $BUILDBIN
+# Copy over plugin.json -> build/bin
+cp $TOPDIR/lib/plugin.json $BUILDBIN

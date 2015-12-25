@@ -1,5 +1,6 @@
 {
   "refName": "upcom-teleop",
   "fullName": "UpDroid Teleop",
-  "shortName": "Teleop"
+  "shortName": "Teleop",
+  "types": ["tab"]
 }
