@@ -2,7 +2,9 @@ library updroid_teleop;
 
 import 'dart:html';
 import 'dart:async';
-import 'dart:js' as js;
+import 'dart:js';
+import 'dart:convert';
+import 'dart:collection' show Maps;
 
 import 'package:upcom-api/web/mailbox/mailbox.dart';
 import 'package:upcom-api/web/tab/tab_controller.dart';
@@ -31,13 +33,16 @@ class UpDroidTeleop extends TabController {
   SpanElement _gamepadButton, _keyboardButton;
   String _leftImageSrc, _rightImageSrc, _mainImageSrc, _thumbnailImageSrc;
   AnchorElement _swapCamerasButton;
+  ScriptElement _teleopJs;
 
   // Use a pre-recorded video file instead of livestreams.
   // FOR DEVELOPMENT ONLY.
   bool _demoMode = true;
 
-  UpDroidTeleop() :
+  UpDroidTeleop(ScriptElement script) :
   super(UpDroidTeleop.names, true, true, getMenuConfig()) {
+    _teleopJs = script;
+
     String ip = window.location.host.split(':')[0];
 
     if (_demoMode) {
@@ -74,10 +79,6 @@ class UpDroidTeleop extends TabController {
       ..text = 'Right Cam';
     _thumbnailStreamDiv.children.add(_thumbnailStreamLabel);
 
-    _swapCamerasButton = refMap['Swap Cameras'];
-
-    if (_demoMode) _initTeleop(new Msg('DUMMY'));
-
 //    DivElement keyboardDiv = new DivElement()
 //      ..classes.add('$refName-keyboard');
 //    containerDiv.children.add(keyboardDiv);
@@ -113,13 +114,7 @@ class UpDroidTeleop extends TabController {
 
     _toolbar.children.addAll([_keyboardButton, _gamepadButton]);
 
-//    List<Gamepad> gamepads = window.navigator.getGamepads();
-//    for (Gamepad gamepad in gamepads) {
-//      if (gamepad.connected) {
-//        print('gamepad-${gamepad.id} connected');
-//        EventStreamProvider<GamepadEvent> tabReadyStream = new EventStreamProvider();
-//      }
-//    }
+    _swapCamerasButton = refMap['Swap Cameras'];
   }
 
   void _setMainFeed(String src) {
@@ -178,61 +173,13 @@ class UpDroidTeleop extends TabController {
   }
 
   void _setUpControl() {
-    // TODO: compress this svg (use that OS X tool).
-    ImageElement image = new ImageElement(src:'tabs/$refName/xbox.svg')
-      ..id = '$refName-$id-icon'
-      ..classes.add('$refName-icon');
-    containerDiv.children.add(image);
-
-    for (int i = 0; i < 4; i++) {
-      SpanElement span = new SpanElement()
-        ..id = '$refName-$id-axis-span-$i'
-        ..classes.add('$refName-axis-span')
-        ..style.transform = 'translate(-50%, -${i * 20 + 50}px)';
-      containerDiv.children.add(span);
-
-      ParagraphElement axisLabel = new ParagraphElement()
-        ..id = '$refName-$id-axis-label-$i'
-        ..classes.add('$refName-axis-label')
-        ..text = 'Axis $i: ';
-      span.children.add(axisLabel);
-
-      ParagraphElement axisData = new ParagraphElement()
-        ..id = '$refName-$id-axis-data-$i'
-        ..classes.add('$refName-axis-data')
-        ..text = 'disconnected';
-      span.children.add(axisData);
-    }
-
-    for (int i = 0; i < 17; i++) {
-      SpanElement span = new SpanElement()
-        ..id = '$refName-$id-button-span-$i'
-        ..classes.add('$refName-button-span')
-        ..style.transform = 'translate(-50%, ${i * 20 - 30}px)';
-      containerDiv.children.add(span);
-
-      ParagraphElement buttonLabel = new ParagraphElement()
-        ..id = '$refName-$id-button-label-$i'
-        ..classes.add('$refName-button-label')
-        ..text = 'Button $i: ';
-      span.children.add(buttonLabel);
-
-      ParagraphElement buttonData = new ParagraphElement()
-        ..id = '$refName-$id-button-data-$i'
-        ..classes.add('$refName-button-data')
-        ..text = '0';
-      span.children.add(buttonData);
-    }
-
-    new js.JsObject(js.context['startScanning'], [id]);
-
     String url = window.location.host;
     url = url.split(':')[0];
     // window.location.host returns whatever is in the URL bar (including port).
     // Since the port here needs to be dynamic, the default needs to be replaced.
     _initWebSocket('ws://' + url + ':12060/$refName/$id/controller/0');
 
-    _setGamepads();
+//    _setGamepads();
   }
 
   void _initWebSocket(String url, [int retrySeconds = 2]) {
@@ -242,31 +189,14 @@ class UpDroidTeleop extends TabController {
 
     _ws.onOpen.listen((e) {
       new Timer.periodic(new Duration(milliseconds: 200), (_) {
-        var updateStatus = new js.JsObject(js.context['updateStatus'], []);
-        String payloadString = '[';
-        for (int i = 1; i <= 21; i++) {
-          payloadString += containerDiv.children[i].children[1].text;
-
-          if (i == 21) {
-            break;
-          } else if (i == 4) {
-            // Dummy values for extra axes that ROS joy expects.
-            payloadString += ',0.0,0.0,0.0,0.0';
-          }
-
-          payloadString += i == 4 ? ';' : ',';
-        }
-        payloadString += ']';
-
-        if (containerDiv.children[1].children[1].text != 'disconnected') {
-          print('payload: $payloadString');
-          _ws.send(payloadString);
-        };
+        Map controllerStatus = JSON.decode(context.callMethod('getStatus').toString());
+        // Only handling one controller for now.
+        _ws.send(controllerStatus['0']);
       });
     });
 
     _ws.onError.listen((e) {
-      print('Console-$id disconnected. Retrying...');
+      print('Teleop-$id disconnected. Retrying...');
       if (!encounteredError) {
         new Timer(new Duration(seconds:retrySeconds), () => _initWebSocket(url, retrySeconds * 2));
       }
@@ -275,7 +205,7 @@ class UpDroidTeleop extends TabController {
   }
 
   void _setGamepads() {
-    Map deviceIds = js.context['controllers'];
+    Map deviceIds = context['controllers'];
     //deviceIds.sort((a, b) => a.compareTo(b));
     for (int i = 0; i < deviceIds.keys.length; i++) {
       addMenuItem(id, refName, {'type': 'toggle', 'title': 'Gamepad$i'}, refMap, '#$refName-$id-controllers');
@@ -285,11 +215,11 @@ class UpDroidTeleop extends TabController {
   void _initTeleop(Msg m) {
     _setMainFeed(_leftImageSrc);
     _setThumbnailFeed(_rightImageSrc);
-//    _setUpControl();
+    _setUpControl();
   }
 
   void registerMailbox() {
-    if (!_demoMode) mailbox.registerWebSocketEvent(EventType.ON_MESSAGE, 'NODES_UP', _initTeleop);
+    mailbox.registerWebSocketEvent(EventType.ON_MESSAGE, 'NODES_UP', _initTeleop);
   }
 
   void _swapImageFeeds() {
@@ -339,5 +269,39 @@ class UpDroidTeleop extends TabController {
     return c.future;
   }
 
-  void cleanUp() {}
+  void cleanUp() {
+    _teleopJs.remove();
+  }
 }
+
+//class JsMap implements Map<String,dynamic> {
+//  final JsObject _jsObject;
+//  JsMap.fromJsObject(this._jsObject);
+//
+//  operator [](String key) => _jsObject[key];
+//  void operator []=(String key, value) {
+//    _jsObject[key] = value;
+//  }
+//  remove(String key) {
+//    final value = this[key];
+//    _jsObject.deleteProperty(key);
+//    return value;
+//  }
+//  Iterable<String> get keys => context['Object'].callMethod('keys', [_jsObject]);
+//
+//  // use Maps to implement functions
+//  bool containsValue(value) => Maps.containsValue(this, value);
+//  bool containsKey(String key) => keys.contains(key);
+//  putIfAbsent(String key, ifAbsent()) => Maps.putIfAbsent(this, key, ifAbsent);
+//  void addAll(Map<String, dynamic> other) {
+//    if (other != null) {
+//      other.forEach((k,v) => this[k] = v);
+//    }
+//  }
+//  void clear() => Maps.clear(this);
+//  void forEach(void f(String key, value)) => Maps.forEach(this, f);
+//  Iterable get values => Maps.getValues(this);
+//  int get length => Maps.length(this);
+//  bool get isEmpty => Maps.isEmpty(this);
+//  bool get isNotEmpty => Maps.isNotEmpty(this);
+//}

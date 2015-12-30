@@ -17,14 +17,8 @@ class CmdrTeleop extends Tab {
   ];
 
   static List allNodes = [
-    '/stereo/left',
-    '/stereo/right',
-    '/web_video_server',
-    '/arduino_bridge',
-    '/left_gripper_controller',
-    '/right_gripper_controller',
-    '/teleop_arm_joy',
-    '/teleop_twist_joy',
+    '/joy_cmdr',
+//    '/teleop_twist_joy'
   ];
 
   Directory _uproot;
@@ -35,40 +29,41 @@ class CmdrTeleop extends Tab {
   super(CmdrTeleop.names, sp, args) {
     _uproot = new Directory(args[2]);
 
-    _startRosNodes(true);
+    _startRosNodes(false);
   }
 
   Future _startRosNodes(bool videoOnly) {
     Completer c = new Completer();
-//    Process.start('bash', ['-c', '. ${_uproot.path}/catkin_ws/devel/setup.bash && roslaunch upcom_teleop upcom_teleop.launch video_only:=${videoOnly.toString()}'], runInShell: true).then((process) {
-//      _shell = process;
-//      //stdout.addStream(process.stdout);
-//      //stderr.addStream(process.stderr);
-//
-//      bool nodesUp = false;
-//
-//      _nodes = videoOnly ? videoOnlyNodes : allNodes;
-//
-//      while (!nodesUp) {
-//        ProcessResult result = Process.runSync('bash', ['-c', '. ${_uproot.path}/catkin_ws/devel/setup.bash && rosnode list'], runInShell: true);
-//        String stdout = result.stdout;
-//        for (String node in _nodes) {
-//          if (!stdout.contains(node)) {
-//            nodesUp = false;
-//            break;
-//          }
-//
-//          nodesUp = true;
-//        }
-//      }
-//
-//      mailbox.send(new Msg('NODES_UP'));
-//      c.complete();
-//    });
+    Process.start('bash', ['-c', '. ${_uproot.path}/catkin_ws/devel/setup.bash && roslaunch upcom_teleop upcom_teleop.launch video_only:=${videoOnly.toString()}'], runInShell: true).then((process) {
+      _shell = process;
+      stdout.addStream(process.stdout);
+      stderr.addStream(process.stderr);
 
-    new Timer(new Duration(seconds: 2), () {
-      mailbox.send(new Msg('NODES_UP'));
-      c.complete();
+      _nodes = videoOnly ? videoOnlyNodes : allNodes;
+
+      // Keep checking every second to see if nodes are up.
+//      new Timer.periodic(new Duration(seconds: 1), (t) {
+//
+//      });
+
+      bool nodesUp = false;
+
+      while (!nodesUp) {
+        ProcessResult result = Process.runSync('bash', ['-c', '. ${_uproot.path}/catkin_ws/devel/setup.bash && rosnode list'], runInShell: true);
+        String out = result.stdout;
+        for (String node in _nodes) {
+          if (!out.contains(node)) {
+            print('missing: $node');
+            break;
+          }
+
+          print('stdout: $out. nodes are up.');
+//        t.cancel();
+          nodesUp = true;
+          mailbox.send(new Msg('NODES_UP'));
+          c.complete();
+        }
+      }
     });
 
     return c.future;
@@ -79,6 +74,7 @@ class CmdrTeleop extends Tab {
   }
 
   void _handleGamepadInput(String endpoint, String s) {
+    print(s);
     if (_shell != null) _shell.stdin.add(UTF8.encode(s));
   }
 
