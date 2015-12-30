@@ -1,43 +1,50 @@
 /*
- * Gamepad API Test
- * Written in 2013 by Ted Mielczarek <ted@mielczarek.org>
+ * axes:
  *
- * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * 'left stick x axis',
+ * 'left stick y axis',
+ * 'right stick x axis',
+ * 'right stick y axis',
  *
- * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ * buttons:
+ *
+ * 'A',
+ * 'B',
+ * 'X',
+ * 'Y',
+ * 'LB',
+ * 'RB',
+ * 'LT',
+ * 'RT',
+ * 'back',
+ * 'start',
+ * 'L3',
+ * 'R3',
+ * 'D-U',
+ * 'D-D',
+ * 'D-L',
+ * 'D-R',
+ * 'power'
+ *
  */
-var haveEvents = 'GamepadEvent' in window;
-var controllers = {};
-var axes = [];
-var buttons = [];
 
-function connecthandler(e) {
-    addgamepad(e.gamepad);
-}
+function getStatus() {
+    var controllers = {};
 
-function addgamepad(gamepad) {
-    controllers[gamepad.index] = gamepad;
-    updateStatus();
-}
+    var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
+    for (var i = 0; i < gamepads.length; i++) {
+        if (!gamepads[i]) { continue; }
 
-function disconnecthandler(e) {
-    removegamepad(e.gamepad);
-}
+        controllers[i] = {"axes": [], "buttons": []};
 
-function removegamepad(gamepad) {
-    delete controllers[gamepad.index];
-}
+        var controller = gamepads[i];
+        if (controller == null) { continue; }
 
-function updateStatus() {
-    scangamepads();
-
-    var controller = controllers[0];
-    if (controller != null) {
         for (var k = 0; k < controller.axes.length; k++) {
             if (k == 0 && (controller.axes[1] == 1 || controller.axes[1] == -1)) {
-                axes[k].innerHTML = 0.0;
+                controllers[i]["axes"].push(0.0);
             } else {
-                axes[k].innerHTML = -controller.axes[k];
+                controllers[i]["axes"].push(-controller.axes[k]);
             }
         }
 
@@ -49,41 +56,9 @@ function updateStatus() {
                 val = val.value;
             }
 
-            if (pressed) {
-                buttons[l].innerHTML = 1;
-            } else {
-                buttons[l].innerHTML = 0;
-            }
+            controllers[i]["buttons"].push(pressed ? 1 : 0);
         }
     }
-}
 
-function scangamepads() {
-    var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
-    for (var i = 0; i < gamepads.length; i++) {
-        if (gamepads[i]) {
-            if (!(gamepads[i].index in controllers)) {
-                addgamepad(gamepads[i]);
-            } else {
-                controllers[gamepads[i].index] = gamepads[i];
-            }
-        }
-    }
-}
-
-function startScanning(idNum) {
-    for (var i = 0; i < 4; i++) {
-        axes[i] = document.getElementById('upcom-teleop-' + idNum + '-axis-data-' + i);
-    }
-
-    for (var j = 0; j < 17; j++) {
-        buttons[j] = document.getElementById('upcom-teleop-' + idNum + '-button-data-' + j);
-    }
-
-    if (haveEvents) {
-        window.addEventListener("gamepadconnected", connecthandler);
-        window.addEventListener("gamepaddisconnected", disconnecthandler);
-    } else {
-        setInterval(scangamepads, 500);
-    }
+    return JSON.stringify(controllers);
 }
