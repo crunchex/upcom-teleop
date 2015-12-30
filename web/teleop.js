@@ -1,10 +1,31 @@
 /*
- * Gamepad API Test
- * Written in 2013 by Ted Mielczarek <ted@mielczarek.org>
+ * axes:
  *
- * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * 'left stick x axis',
+ * 'left stick y axis',
+ * 'right stick x axis',
+ * 'right stick y axis',
  *
- * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ * buttons:
+ *
+ * 'A',
+ * 'B',
+ * 'X',
+ * 'Y',
+ * 'LB',
+ * 'RB',
+ * 'LT',
+ * 'RT',
+ * 'back',
+ * 'start',
+ * 'L3',
+ * 'R3',
+ * 'D-U',
+ * 'D-D',
+ * 'D-L',
+ * 'D-R',
+ * 'power'
+ *
  */
 
 function getStatus() {
@@ -14,16 +35,16 @@ function getStatus() {
     for (var i = 0; i < gamepads.length; i++) {
         if (!gamepads[i]) { continue; }
 
-        controllers[i] = [];
+        controllers[i] = {"axes": [], "buttons": []};
 
         var controller = gamepads[i];
         if (controller == null) { continue; }
 
         for (var k = 0; k < controller.axes.length; k++) {
             if (k == 0 && (controller.axes[1] == 1 || controller.axes[1] == -1)) {
-                controllers[i].push(0.0);
+                controllers[i]["axes"].push(0.0);
             } else {
-                controllers[i].push(-controller.axes[k]);
+                controllers[i]["axes"].push(-controller.axes[k]);
             }
         }
 
@@ -35,11 +56,7 @@ function getStatus() {
                 val = val.value;
             }
 
-            if (pressed) {
-                controllers[i].push(1);
-            } else {
-                controllers[i].push(0);
-            }
+            controllers[i]["buttons"].push(pressed ? 1 : 0);
         }
     }
 

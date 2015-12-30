@@ -191,7 +191,10 @@ class UpDroidTeleop extends TabController {
       new Timer.periodic(new Duration(milliseconds: 200), (_) {
         Map controllerStatus = JSON.decode(context.callMethod('getStatus').toString());
         // Only handling one controller for now.
-        _ws.send(controllerStatus['0']);
+        if (controllerStatus != null && controllerStatus.containsKey('0')) {
+//          print(JSON.encode(controllerStatus['0']));
+          _ws.send(JSON.encode(controllerStatus['0']));
+        }
       });
     });
 
