@@ -4,11 +4,9 @@ import 'dart:html';
 import 'dart:async';
 import 'dart:js';
 import 'dart:convert';
-import 'dart:collection' show Maps;
 
 import 'package:upcom-api/web/mailbox/mailbox.dart';
 import 'package:upcom-api/web/tab/tab_controller.dart';
-import 'package:upcom-api/web/menu/plugin_menu.dart';
 
 class UpDroidTeleop extends TabController {
   static final List<String> names = ['upcom-teleop', 'UpDroid Teleop', 'Teleop'];
@@ -179,6 +177,7 @@ class UpDroidTeleop extends TabController {
     // Since the port here needs to be dynamic, the default needs to be replaced.
     _initWebSocket('ws://' + url + ':12060/$refName/$id/controller/0');
 
+    // This may never be useful.
 //    _setGamepads();
   }
 
@@ -192,7 +191,6 @@ class UpDroidTeleop extends TabController {
         Map controllerStatus = JSON.decode(context.callMethod('getStatus').toString());
         // Only handling one controller for now.
         if (controllerStatus != null && controllerStatus.containsKey('0')) {
-//          print(JSON.encode(controllerStatus['0']));
           _ws.send(JSON.encode(controllerStatus['0']));
         }
       });
@@ -207,13 +205,13 @@ class UpDroidTeleop extends TabController {
     });
   }
 
-  void _setGamepads() {
-    Map deviceIds = context['controllers'];
-    //deviceIds.sort((a, b) => a.compareTo(b));
-    for (int i = 0; i < deviceIds.keys.length; i++) {
-      addMenuItem(id, refName, {'type': 'toggle', 'title': 'Gamepad$i'}, refMap, '#$refName-$id-controllers');
-    }
-  }
+//  void _setGamepads() {
+//    Map deviceIds = context['controllers'];
+//    //deviceIds.sort((a, b) => a.compareTo(b));
+//    for (int i = 0; i < deviceIds.keys.length; i++) {
+//      addMenuItem(id, refName, {'type': 'toggle', 'title': 'Gamepad$i'}, refMap, '#$refName-$id-controllers');
+//    }
+//  }
 
   void _initTeleop(Msg m) {
     _setMainFeed(_leftImageSrc);
@@ -276,35 +274,3 @@ class UpDroidTeleop extends TabController {
     _teleopJs.remove();
   }
 }
-
-//class JsMap implements Map<String,dynamic> {
-//  final JsObject _jsObject;
-//  JsMap.fromJsObject(this._jsObject);
-//
-//  operator [](String key) => _jsObject[key];
-//  void operator []=(String key, value) {
-//    _jsObject[key] = value;
-//  }
-//  remove(String key) {
-//    final value = this[key];
-//    _jsObject.deleteProperty(key);
-//    return value;
-//  }
-//  Iterable<String> get keys => context['Object'].callMethod('keys', [_jsObject]);
-//
-//  // use Maps to implement functions
-//  bool containsValue(value) => Maps.containsValue(this, value);
-//  bool containsKey(String key) => keys.contains(key);
-//  putIfAbsent(String key, ifAbsent()) => Maps.putIfAbsent(this, key, ifAbsent);
-//  void addAll(Map<String, dynamic> other) {
-//    if (other != null) {
-//      other.forEach((k,v) => this[k] = v);
-//    }
-//  }
-//  void clear() => Maps.clear(this);
-//  void forEach(void f(String key, value)) => Maps.forEach(this, f);
-//  Iterable get values => Maps.getValues(this);
-//  int get length => Maps.length(this);
-//  bool get isEmpty => Maps.isEmpty(this);
-//  bool get isNotEmpty => Maps.isNotEmpty(this);
-//}

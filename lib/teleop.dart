@@ -36,15 +36,10 @@ class CmdrTeleop extends Tab {
     Completer c = new Completer();
     Process.start('bash', ['-c', '. ${_uproot.path}/catkin_ws/devel/setup.bash && roslaunch upcom_teleop upcom_teleop.launch video_only:=${videoOnly.toString()}'], runInShell: true).then((process) {
       _shell = process;
-      stdout.addStream(process.stdout);
-      stderr.addStream(process.stderr);
+//      stdout.addStream(process.stdout);
+//      stderr.addStream(process.stderr);
 
       _nodes = videoOnly ? videoOnlyNodes : allNodes;
-
-      // Keep checking every second to see if nodes are up.
-//      new Timer.periodic(new Duration(seconds: 1), (t) {
-//
-//      });
 
       bool nodesUp = false;
 
@@ -52,13 +47,8 @@ class CmdrTeleop extends Tab {
         ProcessResult result = Process.runSync('bash', ['-c', '. ${_uproot.path}/catkin_ws/devel/setup.bash && rosnode list'], runInShell: true);
         String out = result.stdout;
         for (String node in _nodes) {
-          if (!out.contains(node)) {
-            print('missing: $node');
-            break;
-          }
+          if (!out.contains(node)) break;
 
-          print('stdout: $out. nodes are up.');
-//        t.cancel();
           nodesUp = true;
           mailbox.send(new Msg('NODES_UP'));
           c.complete();
@@ -74,12 +64,9 @@ class CmdrTeleop extends Tab {
   }
 
   void _handleGamepadInput(String endpoint, String s) {
-    if (s == '') {
-      return;
-    }
+    if (s == '') return;
 
     String joyInput = _processJoy(s);
-    print('joyInput: $joyInput');
     if (_shell != null) _shell.stdin.add(UTF8.encode(joyInput));
   }
 
@@ -88,9 +75,7 @@ class CmdrTeleop extends Tab {
     List l = _remapJoy(JSON.decode(s));
 
     List axes = l.sublist(0, 8);
-    print('axes: $axes');
     List buttons = l.sublist(8, l.length);
-    print('buttons: $buttons');
 
     String axesString = JSON.encode(axes);
     axesString = axesString.substring(0, axesString.length - 1);
@@ -102,6 +87,17 @@ class CmdrTeleop extends Tab {
   }
 
   List _remapJoy(Map<String, List> raw) {
+    //  Table of index number of /joy.axis:
+    //
+    //  0 - Left/Right Axis stick left
+    //  1 - Up/Down Axis stick left
+    //  2 - LT
+    //  3 - Left/Right Axis stick right
+    //  4 - Up/Down Axis stick right
+    //  5 - RT
+    //  6 - cross key left/right
+    //  7 - cross key up/down
+    //
     //  Table of index number of /joy.buttons:
     //
     //  0 - A
@@ -115,17 +111,7 @@ class CmdrTeleop extends Tab {
     //  8 - power
     //  9 - Button stick left
     //  10 - Button stick right
-    //
-    //  Table of index number of /joy.axis:
-    //
-    //  0 - Left/Right Axis stick left
-    //  1 - Up/Down Axis stick left
-    //  2 - LT
-    //  3 - Left/Right Axis stick right
-    //  4 - Up/Down Axis stick right
-    //  5 - RT
-    //  6 - cross key left/right
-    //  7 - cross key up/down
+
     List l = [];
 
     // Axes.
@@ -134,6 +120,7 @@ class CmdrTeleop extends Tab {
     l.addAll(raw['axes'].sublist(2, raw['axes'].length));
     l.add(raw['buttons'][7] == 1 ? 1 : -1);
 
+    // Convert D-L/R to an axis.
     if (raw['buttons'][14] == 1) {
       l.add(-1);
     } else if (raw['buttons'][15] == 1) {
@@ -142,6 +129,7 @@ class CmdrTeleop extends Tab {
       l.add(0);
     }
 
+    // Convert D-U/D to an axis.
     if (raw['buttons'][13] == 1) {
       l.add(-1);
     } else if (raw['buttons'][12] == 1) {
